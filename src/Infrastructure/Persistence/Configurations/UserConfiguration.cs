@@ -13,7 +13,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.HasKey(u => u.UserId);
 
         builder.Property(u => u.UserName).HasMaxLength(100).IsRequired();
-        builder.Property(u => u.Password).IsRequired();
+        builder.Property(u => u.Hash).IsRequired();
         builder.Property(u => u.Salt).IsRequired();
         builder.Property(u => u.ConfirmerId).IsRequired(false);
 

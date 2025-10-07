@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Infrastructure.Persistence.Configurations;
 
-public class UserRoleConfiguration : IEntityTypeConfiguration<UserRole>
+public class UserRoleConfiguration : IEntityTypeConfiguration<Role>
 {
-    public void Configure(EntityTypeBuilder<UserRole> builder)
+    public void Configure(EntityTypeBuilder<Role> builder)
     {
         builder.ToTable("UserRoles");
 
@@ -16,9 +16,9 @@ public class UserRoleConfiguration : IEntityTypeConfiguration<UserRole>
         builder.Property(r => r.Description).HasMaxLength(255);
 
         builder.HasData(
-            new UserRole { Id = 1, Name = "SuperAdmin", Description = "." },
-            new UserRole { Id = 2, Name = "Admin", Description = "." },
-            new UserRole { Id = 3, Name = "User", Description = "." }
+            new Role { Id = 1, Name = "SuperAdmin", Description = "." },
+            new Role { Id = 2, Name = "Admin", Description = "." },
+            new Role { Id = 3, Name = "User", Description = "." }
         );
     }
 
