@@ -13,10 +13,8 @@
 
   <ItemGroup>
     <Folder Include="Helpers\" />
-    <Folder Include="Interfaces\" />
     <Folder Include="Validators\" />
     <Folder Include="Settings\" />
-    <Folder Include="Services\" />
   </ItemGroup>
 
 </Project>
