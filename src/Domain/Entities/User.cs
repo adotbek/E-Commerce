@@ -22,4 +22,10 @@ public class User
     public UserConfirmer? Confirmer { get; set; }
 
     public ICollection<RefreshToken> RefreshTokens { get; set; }
+
+    public ICollection<Address>? Addresses { get; set; }
+    public ICollection<Order>? Orders { get; set; }
+    public ICollection<Review>? Reviews { get; set; }
+    public ICollection<Wishlist>? Wishlists { get; set; }
+    public ICollection<Cart>? Carts { get; set; }
 }
