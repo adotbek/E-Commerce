@@ -1,7 +1,8 @@
 ﻿using Application.Dtos;
 using Domain.Entities;
 
-namespace Application.Common.Mappers;
+namespace Application.Mappers;
+
 
 public static class AddressMapper
 {
