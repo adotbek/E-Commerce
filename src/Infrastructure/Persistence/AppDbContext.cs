@@ -17,7 +17,7 @@ public class AppDbContext : DbContext
     public DbSet<CartItem> CartItems { get; set; }
     public DbSet<Category> Categories { get; set; }
     public DbSet<Coupon> Coupons { get; set; }
-    public DbSet<FlashSale> flashSales { get; set; }
+    public DbSet<FlashSale> FlashSales { get; set; }
     public DbSet<FlashSaleItem> FlashSaleItems{ get; set; }
     public DbSet<Order> Orders{ get; set; }
     public DbSet<OrderItem> OrderItems{ get; set; }
