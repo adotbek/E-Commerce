@@ -13,17 +13,17 @@ public class FlashSaleItemConfiguration : IEntityTypeConfiguration<FlashSaleItem
         builder.HasKey(fsi => fsi.Id);
 
         builder.Property(fsi => fsi.DiscountedPrice)
-            .HasColumnType("decimal(18,2)")
-            .IsRequired();
-
-        builder.HasOne(fsi => fsi.FlashSale)
-            .WithMany(fs => fs.Items)
-            .HasForeignKey(fsi => fsi.FlashSaleId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .IsRequired()
+            .HasColumnType("decimal(18,2)");
 
         builder.HasOne(fsi => fsi.Product)
-            .WithMany(p => p.FlashSaleItems)
+            .WithMany()
             .HasForeignKey(fsi => fsi.ProductId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne(fsi => fsi.FlashSale)
+            .WithMany()
+            .HasForeignKey(fsi => fsi.FlashSaleId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

@@ -1,40 +1,35 @@
-﻿using Application.Dtos;
-using Application.DTOs.FlashSaleItems;
-using Domain.Entities;
+﻿namespace Application.Mappers;
 
-namespace Application.Mappers;
+using Application.Dtos;
+using Domain.Entities;
 
 public static class FlashSaleItemMapper
 {
-    public static FlashSaleItemGetDto ToGetDto(FlashSaleItem entity, string productName, string productImage, decimal originalPrice)
-    {
-        var discountPercent = (int)Math.Round((1 - (entity.DiscountedPrice / originalPrice)) * 100);
-
-        return new FlashSaleItemGetDto
+    public static FlashSaleItemGetDto ToGetDto(FlashSaleItem entity)
+        => new()
         {
             Id = entity.Id,
             ProductId = entity.ProductId,
-            FlashSaleId = entity.FlashSaleId,
+            ProductName = entity.Product.Name,
+            ProductImage = entity.Product.ImageUrl,
+            OriginalPrice = entity.Product.Price,
             DiscountedPrice = entity.DiscountedPrice,
-            ProductName = productName,
-            ProductImage = productImage,
-            OriginalPrice = originalPrice,
-            DiscountPercent = discountPercent
+            FlashSaleId = entity.FlashSaleId
         };
-    }
 
-    public static FlashSaleItem ToEntity(FlashSaleItemCreateDto dto)
-    {
-        return new FlashSaleItem
+    public static FlashSaleItem ToEntity(FlashSaleItemGetDto dto)
+        => new()
         {
+            Id = dto.Id,
             ProductId = dto.ProductId,
-            FlashSaleId = dto.FlashSaleId,
-            DiscountedPrice = dto.DiscountedPrice
+            DiscountedPrice = dto.DiscountedPrice,
+            FlashSaleId = dto.FlashSaleId
         };
-    }
 
-    public static void UpdateEntity(FlashSaleItem entity, FlashSaleItemUpdateDto dto)
+    public static void UpdateEntity(FlashSaleItem entity, FlashSaleItemGetDto dto)
     {
+        entity.ProductId = dto.ProductId;
         entity.DiscountedPrice = dto.DiscountedPrice;
+        entity.FlashSaleId = dto.FlashSaleId;
     }
 }
