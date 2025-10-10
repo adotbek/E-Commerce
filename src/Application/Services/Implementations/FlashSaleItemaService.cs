@@ -23,13 +23,13 @@ public class FlashSaleItemService(IFlashSaleItemRepository repository) : IFlashS
 
     public async Task AddAsync(FlashSaleItemGetDto dto, CancellationToken cancellationToken = default)
     {
-        var entity = dto.ToEntity();
+        var entity = FlashSaleItemMapper.ToEntity(dto);
         await _repository.AddAsync(entity, cancellationToken);
     }
 
     public async Task UpdateAsync(FlashSaleItemGetDto dto, CancellationToken cancellationToken = default)
     {
-        var entity = dto.ToEntity();
+        var entity = FlashSaleItemMapper.ToEntity(dto);
         await _repository.UpdateAsync(entity, cancellationToken);
     }
 
