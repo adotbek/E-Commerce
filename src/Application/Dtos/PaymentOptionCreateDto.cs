@@ -1,13 +1,17 @@
-﻿namespace Domain.Entities;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-public class PaymentOption
+namespace Application.Dtos;
+
+public class PaymentOptionCreateDto
 {
-    public long Id { get; set; }
+    public long UserId { get; set; }
     public string CardHolderName { get; set; } = default!;
     public string CardNumber { get; set; } = default!;
     public string ExpiryDate { get; set; } = default!;
     public string CardType { get; set; } = default!;
-
-    public long UserId { get; set; }
-    public User User { get; set; } = default!;
 }
+

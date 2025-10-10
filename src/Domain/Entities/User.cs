@@ -21,6 +21,9 @@ public class User
     public long? ConfirmerId { get; set; }
     public UserConfirmer? Confirmer { get; set; }
 
+    public long PaymentOptionId { get; set; }
+    public PaymentOption PaymentOption { get; set; }
+
     public ICollection<RefreshToken> RefreshTokens { get; set; }
 
     public ICollection<Address>? Addresses { get; set; }
