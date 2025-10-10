@@ -7,7 +7,7 @@ public class PaymentOption
     public string CardHolderName { get; set; } = default!;
     public string CardNumber { get; set; } = default!;
     public string ExpiryDate { get; set; } = default!;
-    public string CardType { get; set; } = default!; // VISA, MasterCard
+    public string CardType { get; set; } = default!; 
 
     public User User { get; set; } = default!;
 }
