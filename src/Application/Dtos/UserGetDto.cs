@@ -1,19 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Application.Dtos;
-
-public class UserGetDto
+﻿public class UserGetDto
 {
     public long UserId { get; set; }
-    public string FirstName { get; set; }
-    public string LastName { get; set; }
-    public string UserName { get; set; }
-    public string Email { get; set; }
-    public string Role { get; set; }
+    public string FirstName { get; set; } = default!;
+    public string LastName { get; set; } = default!;
+    public string UserName { get; set; } = default!;
+    public string Email { get; set; } = default!;
     public string? ProfileImgUrl { get; set; }
+    public long TelegramId { get; set; }
+    public long RoleId { get; set; }
+    public long PaymentOptionId { get; set; }
 }
-
