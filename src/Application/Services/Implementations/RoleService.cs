@@ -38,7 +38,7 @@ public class RoleService(IRoleRepository _roleRepo) : IRoleService
             Email = user.Confirmer!.Email,
             UserId = user.UserId,
             UserName = user.UserName,
-            Role = user.Role.Name,
+            //Role = user.Role.Name,
             ProfileImgUrl = user.ProfileImgUrl,
         };
     }
