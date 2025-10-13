@@ -27,10 +27,10 @@ public class PaymentOptionConfiguration : IEntityTypeConfiguration<PaymentOption
         builder.Property(p => p.CardType)
             .IsRequired()
             .HasMaxLength(20);
-
-        builder.HasOne(p => p.User)
-            .WithOne(u => u.PaymentOption)
-            .HasForeignKey<User>(p => p.UserId)
-            .OnDelete(DeleteBehavior.Cascade);
+       
+        //builder.HasOne(p => p.User)
+        //    .WithOne(u => u.PaymentOption)
+        //    .HasForeignKey<PaymentOption>(p => p.UserId)
+        //    .OnDelete(DeleteBehavior.Cascade);
     }
 }

@@ -41,9 +41,10 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(u => u.PaymentOption)
-            .WithMany()
-            .HasForeignKey(u => u.PaymentOptionId)
+            .WithOne(p => p.User)
+            .HasForeignKey<PaymentOption>(p => p.UserId)
             .OnDelete(DeleteBehavior.Restrict);
+
 
         builder.HasOne(u => u.Confirmer)
             .WithOne(c => c.User)
