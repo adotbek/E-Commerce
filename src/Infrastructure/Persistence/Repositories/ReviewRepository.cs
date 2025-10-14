@@ -31,27 +31,25 @@ public class ReviewRepository : IReviewRepository
             .FirstOrDefaultAsync(r => r.Id == id);
     }
 
-    public async Task<Review> AddAsync(Review entity)
+    public async Task<long> AddAsync(Review entity)
     {
         await _context.Reviews.AddAsync(entity);
         await _context.SaveChangesAsync();
-        return entity;
+        return entity.Id;
     }
 
-    public async Task<Review> UpdateAsync(Review entity)
+    public async Task UpdateAsync(Review entity)
     {
         _context.Reviews.Update(entity);
         await _context.SaveChangesAsync();
-        return entity;
     }
 
-    public async Task<bool> DeleteAsync(long id)
+    public async Task DeleteAsync(long id)
     {
         var entity = await _context.Reviews.FindAsync(id);
-        if (entity is null) return false;
+        if (entity is null) return;
 
         _context.Reviews.Remove(entity);
         await _context.SaveChangesAsync();
-        return true;
     }
 }

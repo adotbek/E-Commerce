@@ -5,9 +5,9 @@ using Application.DTOs.FlashSaleItems;
 
 public interface IFlashSaleItemService
 {
-    Task<IEnumerable<FlashSaleItemGetDto>> GetAllAsync(CancellationToken cancellationToken = default);
-    Task<FlashSaleItemGetDto?> GetByIdAsync(long id, CancellationToken cancellationToken = default);
-    Task AddAsync(FlashSaleItemGetDto dto, CancellationToken cancellationToken = default);
-    Task UpdateAsync(FlashSaleItemGetDto dto, CancellationToken cancellationToken = default);
-    Task DeleteAsync(long id, CancellationToken cancellationToken = default);
+    Task<IEnumerable<FlashSaleItemGetDto>> GetAllAsync();
+    Task<FlashSaleItemGetDto?> GetByIdAsync(long id);
+    Task CreateService(FlashSaleItemGetDto dto);
+    Task UpdateAsync(FlashSaleItemGetDto dto);
+    Task DeleteAsync(long id);
 }

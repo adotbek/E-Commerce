@@ -1,43 +1,50 @@
-﻿using Application.Dtos;
-using Application.Interfaces.Repositories;
-using Application.Interfaces.Services;
-using Application.Mappers;
+﻿using Application.Interfaces.Repositories;
+using Domain.Entities;
 
-namespace Application.Services;
+namespace Infrastructure.Repositories;
 
-public class BannerService(IBannerRepository repository) : IBannerService
+public class BannerRepository : IBannerRepository
 {
-    public async Task<BannerGetDto> CreateAsync(BannerCreateDto dto)
+    private readonly AppDbContext _context;
+
+    public BannerRepository(AppDbContext context)
     {
-        var entity = BannerMapper.ToEntity(dto);
-        var created = await repository.CreateAsync(entity);
-        return BannerMapper.ToGetDto(created);
+        _context = context;
     }
 
-    public async Task<ICollection<BannerGetDto>> GetAllAsync()
+    public async Task<long> AddAsync(Banner entity)
     {
-        var banners = await repository.GetAllAsync();
-        return banners.Select(BannerMapper.ToGetDto).ToList();
+        await _context.Banners.AddAsync(entity);
+        await _context.SaveChangesAsync();
+        return entity.Id;
     }
 
-    public async Task<BannerGetDto?> GetByIdAsync(long id)
+    public async Task<Banner?> GetByIdAsync(long id)
     {
-        var entity = await repository.GetByIdAsync(id);
-        return entity is null ? null : BannerMapper.ToGetDto(entity);
+        return await _context.Banners
+            .FirstOrDefaultAsync(b => b.Id == id);
     }
 
-    public async Task<BannerGetDto?> UpdateAsync(long id, BannerUpdateDto dto)
+    public async Task<ICollection<Banner>> GetAllAsync()
     {
-        var entity = await repository.GetByIdAsync(id);
-        if (entity is null) return null;
-
-        BannerMapper.UpdateEntity(entity, dto);
-        var updated = await repository.UpdateAsync(entity);
-        return BannerMapper.ToGetDto(updated);
+        return await _context.Banners
+            .OrderByDescending(b => b.Id)
+            .ToListAsync();
     }
 
-    public async Task<bool> DeleteAsync(long id)
+    public async Task UpdateAsync(Banner entity)
     {
-        return await repository.DeleteAsync(id);
+        _context.Banners.Update(entity);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task DeleteAsync(long id)
+    {
+        var banner = await _context.Banners.FindAsync(id);
+        if (banner is null)
+            throw new KeyNotFoundException($"Banner with Id={id} not found.");
+
+        _context.Banners.Remove(banner);
+        await _context.SaveChangesAsync();
     }
 }

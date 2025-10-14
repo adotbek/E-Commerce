@@ -30,7 +30,6 @@ public class WishlistItemService : IWishlistItemService
     {
         var entity = WishlistItemMapper.ToEntity(dto);
         await _repository.AddAsync(entity);
-        await _repository.SaveChangesAsync();
         return WishlistItemMapper.ToGetDto(entity);
     }
 
@@ -41,9 +40,7 @@ public class WishlistItemService : IWishlistItemService
             return null;
 
         existing.ProductId = dto.ProductId;
-        await _repository.UpdateAsync(existing);
-        await _repository.SaveChangesAsync();
-
+        await _repository.UpdateAsync(existing);        
         return WishlistItemMapper.ToGetDto(existing);
     }
 
@@ -54,7 +51,6 @@ public class WishlistItemService : IWishlistItemService
             return false;
 
         await _repository.DeleteAsync(entity);
-        await _repository.SaveChangesAsync();
         return true;
     }
 }

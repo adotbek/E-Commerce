@@ -5,31 +5,52 @@ using Application.Mappers;
 
 namespace Application.Services;
 
-public class ProductImageService(IProductImageRepository repository) : IProductImageService
+public class ProductImageService : IProductImageService
 {
-    public async Task<IEnumerable<ProductImageDto>> GetAllAsync(CancellationToken cancellationToken = default)
-        => (await repository.GetAllAsync(cancellationToken)).Select(p => p.ToDto());
+    private readonly IProductImageRepository _repository;
 
-    public async Task<ProductImageDto?> GetByIdAsync(long id, CancellationToken cancellationToken = default)
+    public ProductImageService(IProductImageRepository repository)
     {
-        var entity = await repository.GetByIdAsync(id, cancellationToken);
-        return entity?.ToDto();
+        _repository = repository;
     }
 
-    public async Task<ProductImageDto> CreateAsync(ProductImageDto dto, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<ProductImageDto>> GetAllAsync()
     {
-        var entity = dto.ToEntity();
-        var created = await repository.AddAsync(entity, cancellationToken);
-        return created.ToDto();
+        var entities = await _repository.GetAllAsync();
+        return entities.Select(ProductImageMapper.ToDto);
     }
 
-    public async Task<ProductImageDto> UpdateAsync(ProductImageDto dto, CancellationToken cancellationToken = default)
+    public async Task<ProductImageDto?> GetByIdAsync(long id)
     {
-        var entity = dto.ToEntity();
-        var updated = await repository.UpdateAsync(entity, cancellationToken);
-        return updated.ToDto();
+        var entity = await _repository.GetByIdAsync(id);
+        return entity is null ? null : ProductImageMapper.ToDto(entity);
     }
 
-    public async Task DeleteAsync(long id, CancellationToken cancellationToken = default)
-        => await repository.DeleteAsync(id, cancellationToken);
+    public async Task<ProductImageDto> CreateAsync(ProductImageDto dto)
+    {
+        var entity = ProductImageMapper.ToEntity(dto);
+        var created = await _repository.AddAsync(entity);
+        return ProductImageMapper.ToDto(created);
+    }
+
+    public async Task<ProductImageDto> UpdateAsync(ProductImageDto dto)
+    {
+        var existing = await _repository.GetByIdAsync(dto.Id);
+        if (existing is null)
+            throw new KeyNotFoundException($"ProductImage with Id={dto.Id} not found.");
+
+        ProductImageMapper.UpdateEntity(existing, dto);
+
+        var updated = await _repository.UpdateAsync(existing);
+        return ProductImageMapper.ToDto(updated);
+    }
+
+    public async Task DeleteAsync(long id)
+    {
+        var existing = await _repository.GetByIdAsync(id);
+        if (existing is null)
+            throw new KeyNotFoundException($"ProductImage with Id={id} not found.");
+
+        await _repository.DeleteAsync(id);
+    }
 }

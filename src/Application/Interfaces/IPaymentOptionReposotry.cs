@@ -6,7 +6,7 @@ public interface IPaymentOptionRepository
 {
     Task<IEnumerable<PaymentOption>> GetAllAsync();
     Task<PaymentOption?> GetByIdAsync(long id);
-    Task<PaymentOption> AddAsync(PaymentOption entity);
-    Task<PaymentOption> UpdateAsync(PaymentOption entity);
-    Task<bool> DeleteAsync(long id);
+    Task<long> AddAsync(PaymentOption entity);
+    Task UpdateAsync(PaymentOption entity);
+    Task DeleteAsync(long id);
 }

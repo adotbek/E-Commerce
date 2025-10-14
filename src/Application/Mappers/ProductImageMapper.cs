@@ -24,4 +24,9 @@ public static class ProductImageMapper
             ImageUrl = dto.ImageUrl
         };
     }
+    public static void UpdateEntity(ProductImage entity, ProductImageDto dto)
+    {
+        entity.ProductId = dto.ProductId;
+        entity.ImageUrl = dto.ImageUrl;       
+    }
 }

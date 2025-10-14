@@ -5,33 +5,51 @@ using Application.Mappers;
 
 namespace Application.Services;
 
-public class PaymentService(IPaymentRepository repository) : IPaymentService
+public class PaymentService : IPaymentService
 {
-    private readonly IPaymentRepository _repository = repository;
+    private readonly IPaymentRepository _repository;
 
-    public async Task<IEnumerable<PaymentGetDto>> GetAllAsync(CancellationToken cancellationToken = default)
-        => (await _repository.GetAllAsync(cancellationToken)).Select(PaymentMapper.ToGetDto);
-
-    public async Task<PaymentGetDto?> GetByIdAsync(long id, CancellationToken cancellationToken = default)
-        => (await _repository.GetByIdAsync(id, cancellationToken))?.ToGetDto();
-
-    public async Task<PaymentGetDto> AddAsync(PaymentCreateDto dto, CancellationToken cancellationToken = default)
+    public PaymentService(IPaymentRepository repository)
     {
-        var entity = dto.ToEntity();
-        var added = await _repository.AddAsync(entity, cancellationToken);
-        return added.ToGetDto();
+        _repository = repository;
     }
 
-    public async Task<PaymentGetDto> UpdateAsync(PaymentUpdateDto dto, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<PaymentGetDto>> GetAllAsync()
     {
-        var entity = await _repository.GetByIdAsync(dto.Id, cancellationToken)
-                     ?? throw new KeyNotFoundException("Payment not found");
-
-        entity.UpdateEntity(dto);
-        var updated = await _repository.UpdateAsync(entity, cancellationToken);
-        return updated.ToGetDto();
+        var entities = await _repository.GetAllAsync();
+        return entities.Select(PaymentMapper.ToGetDto);
     }
 
-    public async Task DeleteAsync(long id, CancellationToken cancellationToken = default)
-        => await _repository.DeleteAsync(id, cancellationToken);
+    public async Task<PaymentGetDto?> GetByIdAsync(long id)
+    {
+        var entity = await _repository.GetByIdAsync(id);
+        return entity is null ? null : PaymentMapper.ToGetDto(entity);
+    }
+
+    public async Task<PaymentGetDto> CreateAsync(PaymentCreateDto dto)
+    {
+        var entity = PaymentMapper.ToEntity(dto);
+        var added = await _repository.AddAsync(entity);
+        return PaymentMapper.ToGetDto(added);
+    }
+
+    public async Task<PaymentGetDto> UpdateAsync(PaymentUpdateDto dto)
+    {
+        var entity = await _repository.GetByIdAsync(dto.Id);
+        if (entity is null)
+            throw new KeyNotFoundException($"Payment with Id={dto.Id} not found.");
+
+        PaymentMapper.UpdateEntity(entity, dto);
+
+        var updated = await _repository.UpdateAsync(entity);
+        return PaymentMapper.ToGetDto(updated);
+    }
+
+    public async Task<bool> DeleteAsync(long id)
+    {
+        var deleted = await _repository.DeleteAsync(id);
+        if (!deleted)
+            throw new KeyNotFoundException($"Payment with Id={id} not found.");
+        return true;
+    }
 }

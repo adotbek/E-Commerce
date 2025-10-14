@@ -2,47 +2,57 @@
 using Domain.Entities;
 using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using System;
 
 namespace Infrastructure.Repositories;
 
-public class CartRepository(AppDbContext context) : ICartRepository
+public class CartRepository : ICartRepository
 {
-    public async Task<Cart> CreateAsync(Cart entity)
+    private readonly AppDbContext _context;
+
+    public CartRepository(AppDbContext context)
     {
-        await context.Carts.AddAsync(entity);
-        await context.SaveChangesAsync();
-        return entity;
+        _context = context;
+    }
+
+    public async Task<long> AddAsync(Cart entity)
+    {
+        await _context.Carts.AddAsync(entity);
+        await _context.SaveChangesAsync();
+        return entity.Id;
     }
 
     public async Task<Cart?> GetByIdAsync(long id)
     {
-        return await context.Carts
+        return await _context.Carts
+            .Include(c => c.User)
             .Include(c => c.Items)
+            .ThenInclude(i => i.Product)
             .FirstOrDefaultAsync(c => c.Id == id);
     }
 
     public async Task<Cart?> GetByUserIdAsync(long userId)
     {
-        return await context.Carts
+        return await _context.Carts
+            .Include(c => c.User)
             .Include(c => c.Items)
+            .ThenInclude(i => i.Product)
             .FirstOrDefaultAsync(c => c.UserId == userId);
     }
 
-    public async Task<Cart> UpdateAsync(Cart entity)
+    public async Task UpdateAsync(Cart entity)
     {
-        context.Carts.Update(entity);
-        await context.SaveChangesAsync();
-        return entity;
+        _context.Carts.Update(entity);
+        await _context.SaveChangesAsync();
     }
 
-    public async Task<bool> DeleteAsync(long id)
+    public async Task DeleteAsync(long id)
     {
-        var cart = await context.Carts.FirstOrDefaultAsync(c => c.Id == id);
-        if (cart is null)
-            return false;
+        var existing = await _context.Carts.FindAsync(id);
+        if (existing is null)
+            throw new KeyNotFoundException($"Cart with Id={id} not found.");
 
-        context.Carts.Remove(cart);
-        await context.SaveChangesAsync();
-        return true;
+        _context.Carts.Remove(existing);
+        await _context.SaveChangesAsync();
     }
 }

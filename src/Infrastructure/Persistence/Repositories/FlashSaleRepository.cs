@@ -14,47 +14,52 @@ public class FlashSaleRepository : IFlashSaleRepository
         _context = context;
     }
 
-    public async Task<FlashSale> CreateAsync(FlashSale entity)
+    public async Task<long> AddAsync(FlashSale entity)
     {
         await _context.FlashSales.AddAsync(entity);
         await _context.SaveChangesAsync();
-        return entity;
+        return entity.Id;
     }
 
     public async Task<FlashSale?> GetByIdAsync(long id)
     {
-        return await _context.FlashSales.FindAsync(id);
+        return await _context.FlashSales
+            .Include(f => f.items)
+            .ThenInclude(i => i.Product)
+            .FirstOrDefaultAsync(f => f.Id == id);
     }
 
     public async Task<IEnumerable<FlashSale>> GetAllAsync()
     {
         return await _context.FlashSales
-            .OrderByDescending(f => f.StartTime)
+            .Include(f => f.Items)
+            .ThenInclude(i => i.Product)
+            .OrderByDescending(f => f.StartDate)
             .ToListAsync();
     }
 
     public async Task<IEnumerable<FlashSale>> GetActiveAsync(DateTime at)
     {
         return await _context.FlashSales
-            .Where(f => f.StartTime <= at && f.EndTime >= at)
-            .OrderBy(f => f.EndTime)
+            .Include(f => f.Items)
+            .ThenInclude(i => i.Product)
+            .Where(f => f.StartDate <= at && f.EndDate >= at)
             .ToListAsync();
     }
 
-    public async Task<FlashSale> UpdateAsync(FlashSale entity)
+    public async Task UpdateAsync(FlashSale entity)
     {
         _context.FlashSales.Update(entity);
         await _context.SaveChangesAsync();
-        return entity;
     }
 
-    public async Task<bool> DeleteAsync(long id)
+    public async Task DeleteAsync(long id)
     {
-        var entity = await _context.FlashSales.FindAsync(id);
-        if (entity is null) return false;
+        var existing = await _context.FlashSales.FindAsync(id);
+        if (existing is null)
+            return;
 
-        _context.FlashSales.Remove(entity);
+        _context.FlashSales.Remove(existing);
         await _context.SaveChangesAsync();
-        return true;
     }
 }

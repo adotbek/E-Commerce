@@ -1,49 +1,56 @@
-﻿namespace Infrastructure.Repositories;
-
-using Application.Interfaces.Repositories;
+﻿using Application.Interfaces.Repositories;
 using Domain.Entities;
+using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
-using Persistence;
 
-public class FlashSaleItemRepository(AppDbContext context) : IFlashSaleItemRepository
+namespace Infrastructure.Repositories;
+
+public class FlashSaleItemRepository : IFlashSaleItemRepository
 {
-    private readonly AppDbContext _context = context;
+    private readonly AppDbContext _context;
 
-    public async Task<IEnumerable<FlashSaleItem>> GetAllAsync(CancellationToken cancellationToken = default)
+    public FlashSaleItemRepository(AppDbContext context)
+    {
+        _context = context;
+    }
+
+    public async Task<IEnumerable<FlashSaleItem>> GetAllAsync()
     {
         return await _context.FlashSaleItems
             .Include(f => f.Product)
             .Include(f => f.FlashSale)
-            .ToListAsync(cancellationToken);
+            .AsNoTracking()
+            .ToListAsync();
     }
 
-    public async Task<FlashSaleItem?> GetByIdAsync(long id, CancellationToken cancellationToken = default)
+    public async Task<FlashSaleItem?> GetByIdAsync(long id)
     {
         return await _context.FlashSaleItems
             .Include(f => f.Product)
             .Include(f => f.FlashSale)
-            .FirstOrDefaultAsync(f => f.Id == id, cancellationToken);
+            .AsNoTracking()
+            .FirstOrDefaultAsync(f => f.Id == id);
     }
 
-    public async Task AddAsync(FlashSaleItem entity, CancellationToken cancellationToken = default)
+    public async Task AddAsync(FlashSaleItem entity)
     {
-        await _context.FlashSaleItems.AddAsync(entity, cancellationToken);
-        await _context.SaveChangesAsync(cancellationToken);
+        await _context.FlashSaleItems.AddAsync(entity);
+        await _context.SaveChangesAsync();
     }
 
-    public async Task UpdateAsync(FlashSaleItem entity, CancellationToken cancellationToken = default)
+    public async Task UpdateAsync(FlashSaleItem entity)
     {
         _context.FlashSaleItems.Update(entity);
-        await _context.SaveChangesAsync(cancellationToken);
+        await _context.SaveChangesAsync();
     }
 
-    public async Task DeleteAsync(long id, CancellationToken cancellationToken = default)
+    public async Task DeleteAsync(long id)
     {
-        var existing = await _context.FlashSaleItems.FindAsync([id], cancellationToken);
+        var existing = await _context.FlashSaleItems.FindAsync(id);
         if (existing is null)
             return;
 
         _context.FlashSaleItems.Remove(existing);
-        await _context.SaveChangesAsync(cancellationToken);
+        await _context.SaveChangesAsync();
     }
 }

@@ -5,45 +5,52 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories;
 
-public class CouponRepository(AppDbContext context) : ICouponRepository
+public class CouponRepository : ICouponRepository
 {
-    public async Task<Coupon> CreateAsync(Coupon entity)
+    private readonly AppDbContext _context;
+
+    public CouponRepository(AppDbContext context)
     {
-        await context.Coupons.AddAsync(entity);
-        await context.SaveChangesAsync();
-        return entity;
+        _context = context;
+    }
+
+    public async Task<long> AddAsync(Coupon entity)
+    {
+        await _context.Coupons.AddAsync(entity);
+        await _context.SaveChangesAsync();
+        return entity.Id;
     }
 
     public async Task<Coupon?> GetByIdAsync(long id)
     {
-        return await context.Coupons.FirstOrDefaultAsync(c => c.Id == id);
+        return await _context.Coupons.FirstOrDefaultAsync(c => c.Id == id);
     }
 
     public async Task<Coupon?> GetByCodeAsync(string code)
     {
-        return await context.Coupons
-            .FirstOrDefaultAsync(c => c.Code == code && c.IsActive && c.ValidUntil > DateTime.UtcNow);
+        return await _context.Coupons.FirstOrDefaultAsync(c => c.Code == code);
     }
 
     public async Task<IEnumerable<Coupon>> GetAllAsync()
     {
-        return await context.Coupons.ToListAsync();
+        return await _context.Coupons
+            .OrderByDescending(c => c.ExpiryDate)
+            .ToListAsync();
     }
 
-    public async Task<Coupon> UpdateAsync(Coupon entity)
+    public async Task UpdateAsync(Coupon entity)
     {
-        context.Coupons.Update(entity);
-        await context.SaveChangesAsync();
-        return entity;
+        _context.Coupons.Update(entity);
+        await _context.SaveChangesAsync();
     }
 
-    public async Task<bool> DeleteAsync(long id)
+    public async Task DeleteAsync(long id)
     {
-        var entity = await context.Coupons.FirstOrDefaultAsync(c => c.Id == id);
-        if (entity is null) return false;
+        var existing = await _context.Coupons.FindAsync(id);
+        if (existing is null)
+            throw new KeyNotFoundException($"Coupon with Id={id} not found.");
 
-        context.Coupons.Remove(entity);
-        await context.SaveChangesAsync();
-        return true;
+        _context.Coupons.Remove(existing);
+        await _context.SaveChangesAsync();
     }
 }

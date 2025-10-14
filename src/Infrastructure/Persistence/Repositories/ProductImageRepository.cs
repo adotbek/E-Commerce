@@ -17,36 +17,37 @@ public class ProductImageRepository : IProductImageRepository
     public async Task<IEnumerable<ProductImage>> GetAllAsync()
     {
         return await _context.ProductImages
-            .OrderByDescending(p => p.Id)
+            .AsNoTracking()
             .ToListAsync();
     }
 
     public async Task<ProductImage?> GetByIdAsync(long id)
     {
-        return await _context.ProductImages.FindAsync(id);
+        return await _context.ProductImages
+            .AsNoTracking()
+            .FirstOrDefaultAsync(pi => pi.Id == id);
     }
 
-    public async Task<ProductImage> AddAsync(ProductImage entity)
+    public async Task<long> AddAsync(ProductImage entity)
     {
         await _context.ProductImages.AddAsync(entity);
         await _context.SaveChangesAsync();
-        return entity;
+        return entity.Id;
     }
 
-    public async Task<ProductImage> UpdateAsync(ProductImage entity)
+    public async Task UpdateAsync(ProductImage entity)
     {
         _context.ProductImages.Update(entity);
         await _context.SaveChangesAsync();
-        return entity;
     }
 
-    public async Task<bool> DeleteAsync(long id)
+    public async Task DeleteAsync(long id)
     {
-        var entity = await _context.ProductImages.FindAsync(id);
-        if (entity is null) return false;
+        var existing = await _context.ProductImages.FindAsync(id);
+        if (existing is null)
+            return;
 
-        _context.ProductImages.Remove(entity);
+        _context.ProductImages.Remove(existing);
         await _context.SaveChangesAsync();
-        return true;
     }
 }

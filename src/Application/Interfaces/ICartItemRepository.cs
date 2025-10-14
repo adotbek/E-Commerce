@@ -4,9 +4,9 @@ namespace Application.Interfaces.Repositories;
 
 public interface ICartItemRepository
 {
-    Task<CartItem> CreateAsync(CartItem entity);
+    Task<long> AddAsync(CartItem entity);
     Task<CartItem?> GetByIdAsync(long id);
     Task<IEnumerable<CartItem>> GetByCartIdAsync(long cartId);
-    Task<CartItem> UpdateAsync(CartItem entity);
-    Task<bool> DeleteAsync(long id);
+    Task UpdateAsync(CartItem entity);
+    Task DeleteAsync(long id);
 }

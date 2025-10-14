@@ -1,45 +1,52 @@
-﻿using Application.Common.Interfaces.Repositories;
-using Application.Interfaces.Repositories;
+﻿using Application.Interfaces.Repositories;
 using Domain.Entities;
 using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories;
 
-public class BannerRepository(AppDbContext context) : IBannerRepository
+public class BannerRepository : IBannerRepository
 {
-    public async Task<Banner> CreateAsync(Banner entity)
+    private readonly AppDbContext _context;
+
+    public BannerRepository(AppDbContext context)
     {
-        await context.Banners.AddAsync(entity);
-        await context.SaveChangesAsync();
-        return entity;
+        _context = context;
+    }
+
+    public async Task<long> AddAsync(Banner entity)
+    {
+        await _context.Banners.AddAsync(entity);
+        await _context.SaveChangesAsync();
+        return entity.Id;
     }
 
     public async Task<Banner?> GetByIdAsync(long id)
     {
-        return await context.Banners.FirstOrDefaultAsync(b => b.Id == id);
+        return await _context.Banners
+            .FirstOrDefaultAsync(b => b.Id == id);
     }
 
     public async Task<ICollection<Banner>> GetAllAsync()
     {
-        return await context.Banners.OrderByDescending(b => b.Id).ToListAsync();
+        return await _context.Banners
+            .OrderByDescending(b => b.Id)
+            .ToListAsync();
     }
 
-    public async Task<Banner> UpdateAsync(Banner entity)
+    public async Task UpdateAsync(Banner entity)
     {
-        context.Banners.Update(entity);
-        await context.SaveChangesAsync();
-        return entity;
+        _context.Banners.Update(entity);
+        await _context.SaveChangesAsync();
     }
 
-    public async Task<bool> DeleteAsync(long id)
+    public async Task DeleteAsync(long id)
     {
-        var banner = await context.Banners.FirstOrDefaultAsync(b => b.Id == id);
+        var banner = await _context.Banners.FindAsync(id);
         if (banner is null)
-            return false;
+            throw new KeyNotFoundException($"Banner with Id={id} not found.");
 
-        context.Banners.Remove(banner);
-        await context.SaveChangesAsync();
-        return true;
+        _context.Banners.Remove(banner);
+        await _context.SaveChangesAsync();
     }
 }

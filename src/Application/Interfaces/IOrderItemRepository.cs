@@ -6,7 +6,7 @@ public interface IOrderItemRepository
 {
     Task<IEnumerable<OrderItem>> GetAllAsync();
     Task<OrderItem?> GetByIdAsync(long id);
-    Task<OrderItem> AddAsync(OrderItem entity);
-    Task<OrderItem> UpdateAsync(OrderItem entity);
-    Task<bool> DeleteAsync(long id);
+    Task<long> AddAsync(OrderItem entity);
+    Task UpdateAsync(OrderItem entity);
+    Task DeleteAsync(long id);
 }

@@ -5,41 +5,49 @@ using Application.Mappers;
 
 namespace Application.Services;
 
-public class OrderItemService(IOrderItemRepository repository) : IOrderItemService
+public class OrderItemService : IOrderItemService
 {
-    private readonly IOrderItemRepository _repository = repository;
+    private readonly IOrderItemRepository _repository;
 
-    public async Task<IEnumerable<OrderItemGetDto>> GetAllAsync(CancellationToken cancellationToken = default)
+    public OrderItemService(IOrderItemRepository repository)
     {
-        var entities = await _repository.GetAllAsync(cancellationToken);
+        _repository = repository;
+    }
+
+    public async Task<IEnumerable<OrderItemGetDto>> GetAllAsync()
+    {
+        var entities = await _repository.GetAllAsync();
         return entities.Select(OrderItemMapper.ToGetDto);
     }
 
-    public async Task<OrderItemGetDto?> GetByIdAsync(long id, CancellationToken cancellationToken = default)
+    public async Task<OrderItemGetDto?> GetByIdAsync(long id)
     {
-        var entity = await _repository.GetByIdAsync(id, cancellationToken);
+        var entity = await _repository.GetByIdAsync(id);
         return entity is null ? null : OrderItemMapper.ToGetDto(entity);
     }
 
-    public async Task<OrderItemGetDto> AddAsync(OrderItemCreateDto dto, CancellationToken cancellationToken = default)
+    public async Task<OrderItemGetDto> CreateAsync(OrderItemCreateDto dto)
     {
         var entity = OrderItemMapper.ToEntity(dto);
-        var created = await _repository.AddAsync(entity, cancellationToken);
+        var created = await _repository.AddAsync(entity);
         return OrderItemMapper.ToGetDto(created);
     }
 
-    public async Task<OrderItemGetDto> UpdateAsync(OrderItemUpdateDto dto, CancellationToken cancellationToken = default)
+    public async Task<OrderItemGetDto> UpdateAsync(OrderItemUpdateDto dto)
     {
-        var entity = await _repository.GetByIdAsync(dto.Id, cancellationToken);
-        if (entity is null) throw new KeyNotFoundException("OrderItem not found");
+        var existing = await _repository.GetByIdAsync(dto.Id)
+            ?? throw new KeyNotFoundException($"OrderItem with Id={dto.Id} not found.");
 
-        OrderItemMapper.UpdateEntity(entity, dto);
-        var updated = await _repository.UpdateAsync(entity, cancellationToken);
+        OrderItemMapper.UpdateEntity(existing, dto);
+        var updated = await _repository.UpdateAsync(existing);
         return OrderItemMapper.ToGetDto(updated);
     }
 
-    public async Task DeleteAsync(long id, CancellationToken cancellationToken = default)
+    public async Task DeleteAsync(long id)
     {
-        await _repository.DeleteAsync(id, cancellationToken);
+        var existing = await _repository.GetByIdAsync(id)
+            ?? throw new KeyNotFoundException($"OrderItem with Id={id} not found.");
+
+        await _repository.DeleteAsync(id);
     }
 }

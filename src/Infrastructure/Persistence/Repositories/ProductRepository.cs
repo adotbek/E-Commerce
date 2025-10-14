@@ -17,41 +17,37 @@ public class ProductRepository : IProductRepository
     public async Task<IEnumerable<Product>> GetAllAsync()
     {
         return await _context.Products
-            .Include(p => p.Category)
-            .Include(p => p.Images)
-            .OrderByDescending(p => p.Id)
+            .AsNoTracking()
             .ToListAsync();
     }
 
     public async Task<Product?> GetByIdAsync(long id)
     {
         return await _context.Products
-            .Include(p => p.Category)
-            .Include(p => p.Images)
+            .AsNoTracking()
             .FirstOrDefaultAsync(p => p.Id == id);
     }
 
-    public async Task<Product> AddAsync(Product entity)
+    public async Task<long> AddAsync(Product entity)
     {
         await _context.Products.AddAsync(entity);
         await _context.SaveChangesAsync();
-        return entity;
+        return entity.Id;
     }
 
-    public async Task<Product> UpdateAsync(Product entity)
+    public async Task UpdateAsync(Product entity)
     {
         _context.Products.Update(entity);
         await _context.SaveChangesAsync();
-        return entity;
     }
 
-    public async Task<bool> DeleteAsync(long id)
+    public async Task DeleteAsync(long id)
     {
-        var entity = await _context.Products.FindAsync(id);
-        if (entity is null) return false;
+        var existing = await _context.Products.FindAsync(id);
+        if (existing is null)
+            return;
 
-        _context.Products.Remove(entity);
+        _context.Products.Remove(existing);
         await _context.SaveChangesAsync();
-        return true;
     }
 }

@@ -17,36 +17,39 @@ public class OrderItemRepository : IOrderItemRepository
     public async Task<IEnumerable<OrderItem>> GetAllAsync()
     {
         return await _context.OrderItems
-            .OrderByDescending(o => o.Id)
+            .Include(oi => oi.Product)
+            .Include(oi => oi.Order)
             .ToListAsync();
     }
 
     public async Task<OrderItem?> GetByIdAsync(long id)
     {
-        return await _context.OrderItems.FindAsync(id);
+        return await _context.OrderItems
+            .Include(oi => oi.Product)
+            .Include(oi => oi.Order)
+            .FirstOrDefaultAsync(oi => oi.Id == id);
     }
 
-    public async Task<OrderItem> AddAsync(OrderItem entity)
+    public async Task<long> AddAsync(OrderItem entity)
     {
         await _context.OrderItems.AddAsync(entity);
         await _context.SaveChangesAsync();
-        return entity;
+        return entity.Id;
     }
 
-    public async Task<OrderItem> UpdateAsync(OrderItem entity)
+    public async Task UpdateAsync(OrderItem entity)
     {
         _context.OrderItems.Update(entity);
         await _context.SaveChangesAsync();
-        return entity;
     }
 
-    public async Task<bool> DeleteAsync(long id)
+    public async Task DeleteAsync(long id)
     {
-        var entity = await _context.OrderItems.FindAsync(id);
-        if (entity is null) return false;
+        var existing = await _context.OrderItems.FindAsync(id);
+        if (existing is null)
+            return;
 
-        _context.OrderItems.Remove(entity);
+        _context.OrderItems.Remove(existing);
         await _context.SaveChangesAsync();
-        return true;
     }
 }

@@ -17,36 +17,37 @@ public class PaymentRepository : IPaymentRepository
     public async Task<IEnumerable<Payment>> GetAllAsync()
     {
         return await _context.Payments
-            .OrderByDescending(p => p.CreatedAt)
+            .AsNoTracking()
             .ToListAsync();
     }
 
     public async Task<Payment?> GetByIdAsync(long id)
     {
-        return await _context.Payments.FindAsync(id);
+        return await _context.Payments
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p => p.Id == id);
     }
 
-    public async Task<Payment> AddAsync(Payment entity)
+    public async Task<long> AddAsync(Payment entity)
     {
         await _context.Payments.AddAsync(entity);
         await _context.SaveChangesAsync();
-        return entity;
+        return entity.Id;
     }
 
-    public async Task<Payment> UpdateAsync(Payment entity)
+    public async Task UpdateAsync(Payment entity)
     {
         _context.Payments.Update(entity);
         await _context.SaveChangesAsync();
-        return entity;
     }
 
-    public async Task<bool> DeleteAsync(long id)
+    public async Task DeleteAsync(long id)
     {
-        var entity = await _context.Payments.FindAsync(id);
-        if (entity is null) return false;
+        var existing = await _context.Payments.FindAsync(id);
+        if (existing is null)
+            return;
 
-        _context.Payments.Remove(entity);
+        _context.Payments.Remove(existing);
         await _context.SaveChangesAsync();
-        return true;
     }
 }

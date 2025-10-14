@@ -2,6 +2,7 @@
 using Domain.Entities;
 using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Persistence;
 
 namespace Infrastructure.Repositories;
 
@@ -17,36 +18,41 @@ public class OrderRepository : IOrderRepository
     public async Task<IEnumerable<Order>> GetAllAsync()
     {
         return await _context.Orders
-            .OrderByDescending(o => o.CreatedAt)
+            .Include(o => o.User)
+            .Include(o => o.OrderItems)
+            .ThenInclude(oi => oi.Product)
             .ToListAsync();
     }
 
     public async Task<Order?> GetByIdAsync(long id)
     {
-        return await _context.Orders.FindAsync(id);
+        return await _context.Orders
+            .Include(o => o.User)
+            .Include(o => o.OrderItems)
+            .ThenInclude(oi => oi.Product)
+            .FirstOrDefaultAsync(o => o.Id == id);
     }
 
-    public async Task<Order> AddAsync(Order entity)
+    public async Task<long> AddAsync(Order entity)
     {
         await _context.Orders.AddAsync(entity);
         await _context.SaveChangesAsync();
-        return entity;
+        return entity.Id;
     }
 
-    public async Task<Order> UpdateAsync(Order entity)
+    public async Task UpdateAsync(Order entity)
     {
         _context.Orders.Update(entity);
         await _context.SaveChangesAsync();
-        return entity;
     }
 
-    public async Task<bool> DeleteAsync(long id)
+    public async Task DeleteAsync(long id)
     {
-        var entity = await _context.Orders.FindAsync(id);
-        if (entity is null) return false;
+        var existing = await _context.Orders.FindAsync(id);
+        if (existing is null)
+            return;
 
-        _context.Orders.Remove(entity);
+        _context.Orders.Remove(existing);
         await _context.SaveChangesAsync();
-        return true;
     }
 }

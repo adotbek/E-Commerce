@@ -6,7 +6,7 @@ public interface IProductImageRepository
 {
     Task<IEnumerable<ProductImage>> GetAllAsync();
     Task<ProductImage?> GetByIdAsync(long id);
-    Task<ProductImage> AddAsync(ProductImage entity);
-    Task<ProductImage> UpdateAsync(ProductImage entity);
-    Task<bool> DeleteAsync(long id);
+    Task<long> AddAsync(ProductImage entity);
+    Task UpdateAsync(ProductImage entity);
+    Task DeleteAsync(long id);
 }

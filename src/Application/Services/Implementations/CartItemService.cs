@@ -1,43 +1,53 @@
-﻿using Application.Dtos;
-using Application.Interfaces.Repositories;
-using Application.Interfaces.Services;
-using Application.Mappers;
+﻿using Application.Interfaces.Repositories;
+using Domain.Entities;
 
-namespace Application.Services;
+namespace Infrastructure.Repositories;
 
-public class CartItemService(ICartItemRepository repository) : ICartItemService
+public class CartItemRepository : ICartItemRepository
 {
-    public async Task<CartItemGetDto> CreateAsync(CartItemCreateDto dto)
+    private readonly AppDbContext _context;
+
+    public CartItemRepository(AppDbContext context)
     {
-        var entity = CartItemMapper.ToEntity(dto);
-        var created = await repository.CreateAsync(entity);
-        return CartItemMapper.ToGetDto(created);
+        _context = context;
     }
 
-    public async Task<CartItemGetDto?> GetByIdAsync(long id)
+    public async Task<long> AddAsync(CartItem entity)
     {
-        var entity = await repository.GetByIdAsync(id);
-        return entity is null ? null : CartItemMapper.ToGetDto(entity);
+        await _context.CartItems.AddAsync(entity);
+        await _context.SaveChangesAsync();
+        return entity.Id;
     }
 
-    public async Task<IEnumerable<CartItemGetDto>> GetByCartIdAsync(long cartId)
+    public async Task<CartItem?> GetByIdAsync(long id)
     {
-        var items = await repository.GetByCartIdAsync(cartId);
-        return items.Select(CartItemMapper.ToGetDto);
+        return await _context.CartItems
+            .Include(ci => ci.Product)
+            .Include(ci => ci.Cart)
+            .FirstOrDefaultAsync(ci => ci.Id == id);
     }
 
-    public async Task<CartItemGetDto?> UpdateAsync(long id, CartItemUpdateDto dto)
+    public async Task<IEnumerable<CartItem>> GetByCartIdAsync(long cartId)
     {
-        var entity = await repository.GetByIdAsync(id);
-        if (entity is null) return null;
-
-        CartItemMapper.UpdateEntity(entity, dto);
-        var updated = await repository.UpdateAsync(entity);
-        return CartItemMapper.ToGetDto(updated);
+        return await _context.CartItems
+            .Include(ci => ci.Product)
+            .Where(ci => ci.CartId == cartId)
+            .ToListAsync();
     }
 
-    public async Task<bool> DeleteAsync(long id)
+    public async Task UpdateAsync(CartItem entity)
     {
-        return await repository.DeleteAsync(id);
+        _context.CartItems.Update(entity);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task DeleteAsync(long id)
+    {
+        var item = await _context.CartItems.FindAsync(id);
+        if (item is null)
+            throw new KeyNotFoundException($"CartItem with Id={id} not found.");
+
+        _context.CartItems.Remove(item);
+        await _context.SaveChangesAsync();
     }
 }
