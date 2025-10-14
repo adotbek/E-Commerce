@@ -7,7 +7,7 @@ public interface IFlashSaleItemService
 {
     Task<IEnumerable<FlashSaleItemGetDto>> GetAllAsync();
     Task<FlashSaleItemGetDto?> GetByIdAsync(long id);
-    Task CreateService(FlashSaleItemGetDto dto);
-    Task UpdateAsync(FlashSaleItemGetDto dto);
+    Task<long> AddFlashSaleItemService(FlashSaleItemCreateDto dto);
+    Task UpdateAsync(FlashSaleItemGetDto dto, long id);
     Task DeleteAsync(long id);
 }

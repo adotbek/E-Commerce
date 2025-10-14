@@ -4,10 +4,10 @@ namespace Application.Interfaces.Services;
 
 public interface IFlashSaleService
 {
-    Task<FlashSaleGetDto> CreateAsync(FlashSaleCreateDto dto);
+    Task<long> IFlashSaleAsync(FlashSaleCreateDto dto);
     Task<FlashSaleGetDto?> GetByIdAsync(long id);
     Task<IEnumerable<FlashSaleGetDto>> GetAllAsync();
     Task<IEnumerable<FlashSaleGetDto>> GetActiveAsync(DateTime? at = null);
-    Task<FlashSaleGetDto?> UpdateAsync(long id, FlashSaleUpdateDto dto);
-    Task<bool> DeleteAsync(long id);
+    Task UpdateAsync(long id, FlashSaleUpdateDto dto);
+    Task DeleteAsync(long id);
 }

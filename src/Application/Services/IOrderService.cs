@@ -6,7 +6,7 @@ public interface IOrderService
 {
     Task<IEnumerable<OrderGetDto>> GetAllAsync();
     Task<OrderGetDto?> GetByIdAsync(long id);
-    Task<OrderGetDto> CreateAsync(OrderCreateDto dto);
-    Task<OrderGetDto?> UpdateAsync(OrderUpdateDto dto);
+    Task<long> AddOrderAsync(OrderCreateDto dto);
+    Task UpdateAsync(OrderUpdateDto dto);
     Task DeleteAsync(long id);
 }

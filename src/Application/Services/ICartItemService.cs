@@ -4,7 +4,7 @@ namespace Application.Interfaces.Services;
 
 public interface ICartItemService
 {
-    Task<CartItemGetDto> CreateAsync(CartItemCreateDto dto);
+    Task<CartItemGetDto> AddCartItemAsync(CartItemCreateDto dto);
     Task<CartItemGetDto?> GetByIdAsync(long id);
     Task<IEnumerable<CartItemGetDto>> GetByCartIdAsync(long cartId);
     Task<CartItemGetDto?> UpdateAsync(long id, CartItemUpdateDto dto);

@@ -1,40 +1,50 @@
-﻿namespace Application.Services;
-
-using Application.Dtos;
+﻿using Application.Dtos;
+using Application.DTOs.FlashSaleItems;
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
 using Application.Mappers;
 
-public class FlashSaleItemService(IFlashSaleItemRepository repository) : IFlashSaleItemService
+namespace Application.Services;
+
+public class FlashSaleItemService : IFlashSaleItemService
 {
-    private readonly IFlashSaleItemRepository _repository = repository;
+    private readonly IFlashSaleItemRepository _repository;
 
-    public async Task<IEnumerable<FlashSaleItemGetDto>> GetAllAsync(CancellationToken cancellationToken = default)
+    public FlashSaleItemService(IFlashSaleItemRepository repository)
     {
-        var entities = await _repository.GetAllAsync(cancellationToken);
-        return entities.Select(FlashSaleItemMapper.ToGetDto).ToList();
+        _repository = repository;
     }
 
-    public async Task<FlashSaleItemGetDto?> GetByIdAsync(long id, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<FlashSaleItemGetDto>> GetAllAsync()
     {
-        var entity = await _repository.GetByIdAsync(id, cancellationToken);
-        return FlashSaleItemMapper.ToGetDto(entity);
+        var entities = await _repository.GetAllAsync();
+        return entities.Select(FlashSaleItemMapper.ToGetDto);
     }
 
-    public async Task AddAsync(FlashSaleItemGetDto dto, CancellationToken cancellationToken = default)
+    public async Task<FlashSaleItemGetDto?> GetByIdAsync(long id)
+    {
+        var entity = await _repository.GetByIdAsync(id);
+        return entity is null ? null : FlashSaleItemMapper.ToGetDto(entity);
+    }
+
+    public async Task CreateService(FlashSaleItemGetDto dto)
     {
         var entity = FlashSaleItemMapper.ToEntity(dto);
-        await _repository.AddAsync(entity, cancellationToken);
+        await _repository.AddAsync(entity);
     }
 
-    public async Task UpdateAsync(FlashSaleItemGetDto dto, CancellationToken cancellationToken = default)
+    public async Task UpdateAsync(FlashSaleItemGetDto dto)
     {
-        var entity = FlashSaleItemMapper.ToEntity(dto);
-        await _repository.UpdateAsync(entity, cancellationToken);
+        var existing = await _repository.GetByIdAsync(dto.Id);
+        if (existing is null)
+            throw new KeyNotFoundException($"FlashSaleItem with Id={dto.Id} not found");
+
+        FlashSaleItemMapper.UpdateEntity(existing, dto);
+        await _repository.UpdateAsync(existing);
     }
 
-    public async Task DeleteAsync(long id, CancellationToken cancellationToken = default)
+    public async Task DeleteAsync(long id)
     {
-        await _repository.DeleteAsync(id, cancellationToken);
+        await _repository.DeleteAsync(id);
     }
 }

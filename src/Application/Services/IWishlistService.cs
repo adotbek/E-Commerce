@@ -5,7 +5,7 @@ namespace Application.Interfaces;
 public interface IWishlistService
 {
     Task<IEnumerable<WishlistGetDto>> GetAllAsync();
-    Task<WishlistGetDto?> GetByIdAsync(long id);
-    Task<WishlistGetDto> CreateAsync(WishlistCreateDto dto);
-    Task<bool> DeleteAsync(long id);
+    Task<long?> GetByIdAsync(long id);
+    Task AddWishlistAsync(WishlistCreateDto dto);
+    Task DeleteAsync(long id);
 }

@@ -4,9 +4,9 @@ namespace Application.Interfaces.Services;
 
 public interface ICartService
 {
-    Task<CartGetDto> CreateAsync(CartCreateDto dto);
+    Task<long> AddCartAsync(CartCreateDto dto);
     Task<CartGetDto?> GetByIdAsync(long id);
     Task<CartGetDto?> GetByUserIdAsync(long userId);
-    Task<CartGetDto?> UpdateAsync(long id, CartUpdateDto dto);
-    Task<bool> DeleteAsync(long id);
+    Task UpdateAsync(long userId, CartUpdateDto dto);
+    Task DeleteAsync(long id);
 }
