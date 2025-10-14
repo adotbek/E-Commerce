@@ -9,5 +9,4 @@ public interface IWishlistItemRepository
     Task AddAsync(WishlistItem entity);
     Task UpdateAsync(WishlistItem entity);
     Task DeleteAsync(WishlistItem entity);
-    Task SaveChangesAsync();
 }

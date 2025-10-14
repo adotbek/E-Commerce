@@ -4,9 +4,9 @@ namespace Application.Interfaces.Repositories;
 
 public interface IPaymentOptionRepository
 {
-    Task<IEnumerable<PaymentOption>> GetAllAsync(CancellationToken cancellationToken = default);
-    Task<PaymentOption?> GetByIdAsync(long id, CancellationToken cancellationToken = default);
-    Task<PaymentOption> AddAsync(PaymentOption entity, CancellationToken cancellationToken = default);
-    Task<PaymentOption> UpdateAsync(PaymentOption entity, CancellationToken cancellationToken = default);
-    Task DeleteAsync(long id, CancellationToken cancellationToken = default);
+    Task<IEnumerable<PaymentOption>> GetAllAsync();
+    Task<PaymentOption?> GetByIdAsync(long id);
+    Task<PaymentOption> AddAsync(PaymentOption entity);
+    Task<PaymentOption> UpdateAsync(PaymentOption entity);
+    Task<bool> DeleteAsync(long id);
 }

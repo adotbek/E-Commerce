@@ -33,20 +33,23 @@ public class WishlistRepository : IWishlistRepository
     public async Task AddAsync(Wishlist entity)
     {
         await _context.Wishlists.AddAsync(entity);
+        await _context.SaveChangesAsync();
+
     }
 
     public async Task UpdateAsync(Wishlist entity)
     {
         _context.Wishlists.Update(entity);
+        await _context.SaveChangesAsync();
+
     }
 
     public async Task DeleteAsync(Wishlist entity)
     {
         _context.Wishlists.Remove(entity);
+        await _context.SaveChangesAsync();
+
     }
 
-    public async Task SaveChangesAsync()
-    {
-        await _context.SaveChangesAsync();
-    }
+
 }

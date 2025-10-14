@@ -29,8 +29,7 @@ public class UserService : IUserService
     public async Task<UserGetDto> CreateAsync(UserCreateDto dto)
     {
         var entity = UserMapper.ToEntity(dto);
-        await _repository.AddAsync(entity);
-        await _repository.SaveChangesAsync();
+        await _repository.AddUserAsync(entity);
         return UserMapper.ToGetDto(entity);
     }
    
@@ -40,8 +39,7 @@ public class UserService : IUserService
         if (user is null)
             return false;
 
-        await _repository.DeleteAsync(user);
-        await _repository.SaveChangesAsync();
+        await _repository.DeleteUserAsync(user);
         return true;
     }
 }

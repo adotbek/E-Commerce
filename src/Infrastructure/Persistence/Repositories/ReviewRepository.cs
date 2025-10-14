@@ -1,46 +1,57 @@
 ﻿using Application.Interfaces.Repositories;
 using Domain.Entities;
+using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
-namespace Infrastructure.Persistence.Repositories;
+namespace Infrastructure.Repositories;
 
-public class ReviewRepository(AppDbContext context) : IReviewRepository
+public class ReviewRepository : IReviewRepository
 {
-    public async Task<IEnumerable<Review>> GetAllAsync(CancellationToken cancellationToken = default)
-        => await context.Reviews
-            .AsNoTracking()
-            .Include(r => r.User)
-            .Include(r => r.Product)
-            .ToListAsync(cancellationToken);
+    private readonly AppDbContext _context;
 
-    public async Task<Review?> GetByIdAsync(long id, CancellationToken cancellationToken = default)
-        => await context.Reviews
-            .Include(r => r.User)
-            .Include(r => r.Product)
-            .AsNoTracking()
-            .FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
-
-    public async Task<Review> AddAsync(Review entity, CancellationToken cancellationToken = default)
+    public ReviewRepository(AppDbContext context)
     {
-        await context.Reviews.AddAsync(entity, cancellationToken);
-        await context.SaveChangesAsync(cancellationToken);
+        _context = context;
+    }
+
+    public async Task<IEnumerable<Review>> GetAllAsync()
+    {
+        return await _context.Reviews
+            .Include(r => r.User)
+            .Include(r => r.Product)
+            .OrderByDescending(r => r.CreatedAt)
+            .ToListAsync();
+    }
+
+    public async Task<Review?> GetByIdAsync(long id)
+    {
+        return await _context.Reviews
+            .Include(r => r.User)
+            .Include(r => r.Product)
+            .FirstOrDefaultAsync(r => r.Id == id);
+    }
+
+    public async Task<Review> AddAsync(Review entity)
+    {
+        await _context.Reviews.AddAsync(entity);
+        await _context.SaveChangesAsync();
         return entity;
     }
 
-    public async Task<Review> UpdateAsync(Review entity, CancellationToken cancellationToken = default)
+    public async Task<Review> UpdateAsync(Review entity)
     {
-        context.Reviews.Update(entity);
-        await context.SaveChangesAsync(cancellationToken);
+        _context.Reviews.Update(entity);
+        await _context.SaveChangesAsync();
         return entity;
     }
 
-    public async Task DeleteAsync(long id, CancellationToken cancellationToken = default)
+    public async Task<bool> DeleteAsync(long id)
     {
-        var entity = await context.Reviews.FindAsync([id], cancellationToken);
-        if (entity is not null)
-        {
-            context.Reviews.Remove(entity);
-            await context.SaveChangesAsync(cancellationToken);
-        }
+        var entity = await _context.Reviews.FindAsync(id);
+        if (entity is null) return false;
+
+        _context.Reviews.Remove(entity);
+        await _context.SaveChangesAsync();
+        return true;
     }
 }

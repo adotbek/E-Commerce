@@ -1,46 +1,52 @@
-﻿// Infrastructure/Repositories/OrderRepository.cs
-using Application.Interfaces.Repositories;
+﻿using Application.Interfaces.Repositories;
 using Domain.Entities;
 using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories;
 
-public class OrderRepository(AppDbContext context) : IOrderRepository
+public class OrderRepository : IOrderRepository
 {
-    private readonly AppDbContext _context = context;
+    private readonly AppDbContext _context;
 
-    public async Task<IEnumerable<Order>> GetAllAsync(CancellationToken cancellationToken = default)
-        => await _context.Orders
-                         .Include(o => o.Items)
-                         .ToListAsync(cancellationToken);
-
-    public async Task<Order?> GetByIdAsync(long id, CancellationToken cancellationToken = default)
-        => await _context.Orders
-                         .Include(o => o.Items)
-                         .FirstOrDefaultAsync(o => o.Id == id, cancellationToken);
-
-    public async Task<Order> AddAsync(Order entity, CancellationToken cancellationToken = default)
+    public OrderRepository(AppDbContext context)
     {
-        await _context.Orders.AddAsync(entity, cancellationToken);
-        await _context.SaveChangesAsync(cancellationToken);
+        _context = context;
+    }
+
+    public async Task<IEnumerable<Order>> GetAllAsync()
+    {
+        return await _context.Orders
+            .OrderByDescending(o => o.CreatedAt)
+            .ToListAsync();
+    }
+
+    public async Task<Order?> GetByIdAsync(long id)
+    {
+        return await _context.Orders.FindAsync(id);
+    }
+
+    public async Task<Order> AddAsync(Order entity)
+    {
+        await _context.Orders.AddAsync(entity);
+        await _context.SaveChangesAsync();
         return entity;
     }
 
-    public async Task<Order> UpdateAsync(Order entity, CancellationToken cancellationToken = default)
+    public async Task<Order> UpdateAsync(Order entity)
     {
         _context.Orders.Update(entity);
-        await _context.SaveChangesAsync(cancellationToken);
+        await _context.SaveChangesAsync();
         return entity;
     }
 
-    public async Task DeleteAsync(long id, CancellationToken cancellationToken = default)
+    public async Task<bool> DeleteAsync(long id)
     {
-        var entity = await _context.Orders.FindAsync([id], cancellationToken);
-        if (entity is not null)
-        {
-            _context.Orders.Remove(entity);
-            await _context.SaveChangesAsync(cancellationToken);
-        }
+        var entity = await _context.Orders.FindAsync(id);
+        if (entity is null) return false;
+
+        _context.Orders.Remove(entity);
+        await _context.SaveChangesAsync();
+        return true;
     }
 }

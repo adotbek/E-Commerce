@@ -5,47 +5,48 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories;
 
-public class OrderItemRepository(AppDbContext context) : IOrderItemRepository
+public class OrderItemRepository : IOrderItemRepository
 {
-    private readonly AppDbContext _context = context;
+    private readonly AppDbContext _context;
 
-    public async Task<IEnumerable<OrderItem>> GetAllAsync(CancellationToken cancellationToken = default)
+    public OrderItemRepository(AppDbContext context)
     {
-        return await _context.OrderItems
-            .Include(x => x.Product)
-            .Include(x => x.Order)
-            .ToListAsync(cancellationToken);
+        _context = context;
     }
 
-    public async Task<OrderItem?> GetByIdAsync(long id, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<OrderItem>> GetAllAsync()
     {
         return await _context.OrderItems
-            .Include(x => x.Product)
-            .Include(x => x.Order)
-            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+            .OrderByDescending(o => o.Id)
+            .ToListAsync();
     }
 
-    public async Task<OrderItem> AddAsync(OrderItem entity, CancellationToken cancellationToken = default)
+    public async Task<OrderItem?> GetByIdAsync(long id)
     {
-        await _context.OrderItems.AddAsync(entity, cancellationToken);
-        await _context.SaveChangesAsync(cancellationToken);
+        return await _context.OrderItems.FindAsync(id);
+    }
+
+    public async Task<OrderItem> AddAsync(OrderItem entity)
+    {
+        await _context.OrderItems.AddAsync(entity);
+        await _context.SaveChangesAsync();
         return entity;
     }
 
-    public async Task<OrderItem> UpdateAsync(OrderItem entity, CancellationToken cancellationToken = default)
+    public async Task<OrderItem> UpdateAsync(OrderItem entity)
     {
         _context.OrderItems.Update(entity);
-        await _context.SaveChangesAsync(cancellationToken);
+        await _context.SaveChangesAsync();
         return entity;
     }
 
-    public async Task DeleteAsync(long id, CancellationToken cancellationToken = default)
+    public async Task<bool> DeleteAsync(long id)
     {
-        var entity = await _context.OrderItems.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
-        if (entity is not null)
-        {
-            _context.OrderItems.Remove(entity);
-            await _context.SaveChangesAsync(cancellationToken);
-        }
+        var entity = await _context.OrderItems.FindAsync(id);
+        if (entity is null) return false;
+
+        _context.OrderItems.Remove(entity);
+        await _context.SaveChangesAsync();
+        return true;
     }
 }

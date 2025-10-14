@@ -7,6 +7,6 @@
     public string Email { get; set; } = default!;
     public string? ProfileImgUrl { get; set; }
     public long TelegramId { get; set; }
-    public long RoleId { get; set; }
+    public string RoleName { get; set; }
     public long PaymentOptionId { get; set; }
 }

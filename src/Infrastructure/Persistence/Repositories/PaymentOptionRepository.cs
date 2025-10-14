@@ -1,47 +1,52 @@
 ﻿using Application.Interfaces.Repositories;
 using Domain.Entities;
-using Infrastructure.Data;
 using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories;
 
-public class PaymentOptionRepository(AppDbContext context) : IPaymentOptionRepository
+public class PaymentOptionRepository : IPaymentOptionRepository
 {
-    private readonly AppDbContext _context = context;
+    private readonly AppDbContext _context;
 
-    public async Task<IEnumerable<PaymentOption>> GetAllAsync(CancellationToken cancellationToken = default)
+    public PaymentOptionRepository(AppDbContext context)
     {
-        return await _context.PaymentOptions.Include(p => p.User).ToListAsync(cancellationToken);
+        _context = context;
     }
 
-    public async Task<PaymentOption?> GetByIdAsync(long id, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<PaymentOption>> GetAllAsync()
     {
-        return await _context.PaymentOptions.Include(p => p.User)
-            .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
+        return await _context.PaymentOptions
+            .OrderByDescending(p => p.Id)
+            .ToListAsync();
     }
 
-    public async Task<PaymentOption> AddAsync(PaymentOption entity, CancellationToken cancellationToken = default)
+    public async Task<PaymentOption?> GetByIdAsync(long id)
     {
-        await _context.PaymentOptions.AddAsync(entity, cancellationToken);
-        await _context.SaveChangesAsync(cancellationToken);
+        return await _context.PaymentOptions.FindAsync(id);
+    }
+
+    public async Task<PaymentOption> AddAsync(PaymentOption entity)
+    {
+        await _context.PaymentOptions.AddAsync(entity);
+        await _context.SaveChangesAsync();
         return entity;
     }
 
-    public async Task<PaymentOption> UpdateAsync(PaymentOption entity, CancellationToken cancellationToken = default)
+    public async Task<PaymentOption> UpdateAsync(PaymentOption entity)
     {
         _context.PaymentOptions.Update(entity);
-        await _context.SaveChangesAsync(cancellationToken);
+        await _context.SaveChangesAsync();
         return entity;
     }
 
-    public async Task DeleteAsync(long id, CancellationToken cancellationToken = default)
+    public async Task<bool> DeleteAsync(long id)
     {
-        var entity = await _context.PaymentOptions.FindAsync([id], cancellationToken);
-        if (entity != null)
-        {
-            _context.PaymentOptions.Remove(entity);
-            await _context.SaveChangesAsync(cancellationToken);
-        }
+        var entity = await _context.PaymentOptions.FindAsync(id);
+        if (entity is null) return false;
+
+        _context.PaymentOptions.Remove(entity);
+        await _context.SaveChangesAsync();
+        return true;
     }
 }

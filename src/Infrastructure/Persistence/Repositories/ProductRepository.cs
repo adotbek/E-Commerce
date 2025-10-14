@@ -1,38 +1,57 @@
 ﻿using Application.Interfaces.Repositories;
 using Domain.Entities;
+using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
-namespace Infrastructure.Persistence.Repositories;
+namespace Infrastructure.Repositories;
 
-public class ProductRepository(AppDbContext context) : IProductRepository
+public class ProductRepository : IProductRepository
 {
-    public async Task<IEnumerable<Product>> GetAllAsync(CancellationToken cancellationToken = default)
-        => await context.Products.AsNoTracking().ToListAsync(cancellationToken);
+    private readonly AppDbContext _context;
 
-    public async Task<Product?> GetByIdAsync(long id, CancellationToken cancellationToken = default)
-        => await context.Products.AsNoTracking().FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
-
-    public async Task<Product> AddAsync(Product entity, CancellationToken cancellationToken = default)
+    public ProductRepository(AppDbContext context)
     {
-        await context.Products.AddAsync(entity, cancellationToken);
-        await context.SaveChangesAsync(cancellationToken);
+        _context = context;
+    }
+
+    public async Task<IEnumerable<Product>> GetAllAsync()
+    {
+        return await _context.Products
+            .Include(p => p.Category)
+            .Include(p => p.Images)
+            .OrderByDescending(p => p.Id)
+            .ToListAsync();
+    }
+
+    public async Task<Product?> GetByIdAsync(long id)
+    {
+        return await _context.Products
+            .Include(p => p.Category)
+            .Include(p => p.Images)
+            .FirstOrDefaultAsync(p => p.Id == id);
+    }
+
+    public async Task<Product> AddAsync(Product entity)
+    {
+        await _context.Products.AddAsync(entity);
+        await _context.SaveChangesAsync();
         return entity;
     }
 
-    public async Task<Product> UpdateAsync(Product entity, CancellationToken cancellationToken = default)
+    public async Task<Product> UpdateAsync(Product entity)
     {
-        context.Products.Update(entity);
-        await context.SaveChangesAsync(cancellationToken);
+        _context.Products.Update(entity);
+        await _context.SaveChangesAsync();
         return entity;
     }
 
-    public async Task DeleteAsync(long id, CancellationToken cancellationToken = default)
+    public async Task<bool> DeleteAsync(long id)
     {
-        var product = await context.Products.FindAsync([id], cancellationToken);
-        if (product is not null)
-        {
-            context.Products.Remove(product);
-            await context.SaveChangesAsync(cancellationToken);
-        }
+        var entity = await _context.Products.FindAsync(id);
+        if (entity is null) return false;
+
+        _context.Products.Remove(entity);
+        await _context.SaveChangesAsync();
+        return true;
     }
 }

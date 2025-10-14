@@ -26,7 +26,7 @@ public static class UserMapper
             Email = entity.Email,
             ProfileImgUrl = entity.ProfileImgUrl,
             TelegramId = entity.TelegramId,
-            RoleId = entity.RoleId,
+            RoleName = entity.Role.Name,
             PaymentOptionId = entity.PaymentOptionId
         };
     }
