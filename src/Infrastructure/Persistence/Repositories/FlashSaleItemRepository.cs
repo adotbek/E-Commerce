@@ -32,10 +32,11 @@ public class FlashSaleItemRepository : IFlashSaleItemRepository
             .FirstOrDefaultAsync(f => f.Id == id);
     }
 
-    public async Task AddAsync(FlashSaleItem entity)
+    public async Task<long> AddAsync(FlashSaleItem entity)
     {
         await _context.FlashSaleItems.AddAsync(entity);
         await _context.SaveChangesAsync();
+        return entity.Id;
     }
 
     public async Task UpdateAsync(FlashSaleItem entity)
@@ -48,7 +49,7 @@ public class FlashSaleItemRepository : IFlashSaleItemRepository
     {
         var existing = await _context.FlashSaleItems.FindAsync(id);
         if (existing is null)
-            return;
+            throw new KeyNotFoundException($"FlashSaleItem with Id={id} not found.");
 
         _context.FlashSaleItems.Remove(existing);
         await _context.SaveChangesAsync();

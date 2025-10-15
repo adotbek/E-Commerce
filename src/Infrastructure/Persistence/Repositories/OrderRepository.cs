@@ -2,7 +2,6 @@
 using Domain.Entities;
 using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
-using Persistence;
 
 namespace Infrastructure.Repositories;
 
@@ -19,7 +18,7 @@ public class OrderRepository : IOrderRepository
     {
         return await _context.Orders
             .Include(o => o.User)
-            .Include(o => o.OrderItems)
+            .Include(o => o.Items)
             .ThenInclude(oi => oi.Product)
             .ToListAsync();
     }
@@ -28,7 +27,7 @@ public class OrderRepository : IOrderRepository
     {
         return await _context.Orders
             .Include(o => o.User)
-            .Include(o => o.OrderItems)
+            .Include(o => o.Items)
             .ThenInclude(oi => oi.Product)
             .FirstOrDefaultAsync(o => o.Id == id);
     }

@@ -34,7 +34,7 @@ public class CouponRepository : ICouponRepository
     public async Task<IEnumerable<Coupon>> GetAllAsync()
     {
         return await _context.Coupons
-            .OrderByDescending(c => c.ExpiryDate)
+            .OrderByDescending(c => c.ValidUntil)
             .ToListAsync();
     }
 

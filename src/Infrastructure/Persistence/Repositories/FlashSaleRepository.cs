@@ -24,7 +24,7 @@ public class FlashSaleRepository : IFlashSaleRepository
     public async Task<FlashSale?> GetByIdAsync(long id)
     {
         return await _context.FlashSales
-            .Include(f => f.items)
+            .Include(f => f.Items)
             .ThenInclude(i => i.Product)
             .FirstOrDefaultAsync(f => f.Id == id);
     }
@@ -34,7 +34,7 @@ public class FlashSaleRepository : IFlashSaleRepository
         return await _context.FlashSales
             .Include(f => f.Items)
             .ThenInclude(i => i.Product)
-            .OrderByDescending(f => f.StartDate)
+            .OrderByDescending(f => f.StartTime)
             .ToListAsync();
     }
 
@@ -43,7 +43,7 @@ public class FlashSaleRepository : IFlashSaleRepository
         return await _context.FlashSales
             .Include(f => f.Items)
             .ThenInclude(i => i.Product)
-            .Where(f => f.StartDate <= at && f.EndDate >= at)
+            .Where(f => f.StartTime <= at && f.EndTime >= at)
             .ToListAsync();
     }
 

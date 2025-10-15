@@ -5,45 +5,50 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories;
 
-public class CartItemRepository(AppDbContext context) : ICartItemRepository
+public class CartItemRepository : ICartItemRepository
 {
-    public async Task<CartItem> CreateAsync(CartItem entity)
+    private readonly AppDbContext _context;
+
+    public CartItemRepository(AppDbContext context)
     {
-        await context.CartItems.AddAsync(entity);
-        await context.SaveChangesAsync();
-        return entity;
+        _context = context;
+    }
+
+    public async Task<long> AddAsync(CartItem entity)
+    {
+        await _context.CartItems.AddAsync(entity);
+        await _context.SaveChangesAsync();
+        return entity.Id;
     }
 
     public async Task<CartItem?> GetByIdAsync(long id)
     {
-        return await context.CartItems
+        return await _context.CartItems
             .Include(ci => ci.Product)
             .FirstOrDefaultAsync(ci => ci.Id == id);
     }
 
     public async Task<IEnumerable<CartItem>> GetByCartIdAsync(long cartId)
     {
-        return await context.CartItems
+        return await _context.CartItems
             .Include(ci => ci.Product)
             .Where(ci => ci.CartId == cartId)
             .ToListAsync();
     }
 
-    public async Task<CartItem> UpdateAsync(CartItem entity)
+    public async Task UpdateAsync(CartItem entity)
     {
-        context.CartItems.Update(entity);
-        await context.SaveChangesAsync();
-        return entity;
+        _context.CartItems.Update(entity);
+        await _context.SaveChangesAsync();
     }
 
-    public async Task<bool> DeleteAsync(long id)
+    public async Task DeleteAsync(long id)
     {
-        var entity = await context.CartItems.FirstOrDefaultAsync(ci => ci.Id == id);
+        var entity = await _context.CartItems.FindAsync(id);
         if (entity is null)
-            return false;
+            throw new KeyNotFoundException($"Cart item with Id={id} not found.");
 
-        context.CartItems.Remove(entity);
-        await context.SaveChangesAsync();
-        return true;
+        _context.CartItems.Remove(entity);
+        await _context.SaveChangesAsync();
     }
 }

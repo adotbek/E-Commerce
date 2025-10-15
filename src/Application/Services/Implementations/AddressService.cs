@@ -1,42 +1,48 @@
-﻿using Application.Common.Interfaces.Repositories;
-using Application.Dtos;
+﻿using Application.Dtos;
 using Application.Mappers;
+using Application.Common.Interfaces.Repositories;
 
 namespace Application.Services;
 
-public class AddressService(IAddressRepository repository) : IAddressService
+public class AddressService : IAddressService
 {
-    public async Task<AddressGetDto> CreateAsync(AddressCreateDto dto)
+    private readonly IAddressRepository _repository;
+
+    public AddressService(IAddressRepository repository)
+    {
+        _repository = repository;
+    }
+
+    public async Task AddAddressAsync(AddressCreateDto dto)
     {
         var entity = AddressMapper.ToEntity(dto);
-        var created = await repository.CreateAsync(entity);
-        return AddressMapper.ToDto(created);
+        await _repository.AddAsync(entity);
     }
 
     public async Task<ICollection<AddressGetDto>> GetByUserIdAsync(long userId)
     {
-        var list = await repository.GetByUserIdAsync(userId);
-        return list.Select(AddressMapper.ToDto).ToList();
+        var addresses = await _repository.GetByUserIdAsync(userId);
+        return addresses.Select(AddressMapper.ToDto).ToList();
     }
 
     public async Task<AddressGetDto?> GetByIdAsync(long id)
     {
-        var entity = await repository.GetByIdAsync(id);
+        var entity = await _repository.GetByIdAsync(id);
         return entity is null ? null : AddressMapper.ToDto(entity);
     }
 
-    public async Task<AddressGetDto?> UpdateAsync(long id, AddressUpdateDto dto)
+    public async Task UpdateAsync(long id, AddressUpdateDto dto)
     {
-        var entity = await repository.GetByIdAsync(id);
-        if (entity is null) return null;
+        var entity = await _repository.GetByIdAsync(id);
+        if (entity is null)
+            throw new KeyNotFoundException($"Address with ID {id} not found.");
 
         AddressMapper.UpdateEntity(entity, dto);
-        var updated = await repository.UpdateAsync(entity);
-        return AddressMapper.ToDto(updated);
+        await _repository.UpdateAsync(entity);
     }
 
-    public async Task<bool> DeleteAsync(long id)
+    public async Task DeleteAsync(long id)
     {
-        return await repository.DeleteAsync(id);
+        await _repository.DeleteAsync(id);
     }
 }
