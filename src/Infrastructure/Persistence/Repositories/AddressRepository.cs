@@ -51,4 +51,53 @@ public class AddressRepository : IAddressRepository
         _context.Addresses.Remove(entity);
         await _context.SaveChangesAsync();
     }
+
+    public async Task SetDefaultAddressAsync(long userId, long addressId)
+    {
+        var userAddresses = await _context.Addresses
+            .Where(a => a.UserId == userId)
+            .ToListAsync();
+
+        if (!userAddresses.Any())
+            throw new InvalidOperationException($"User with ID {userId} has no addresses.");
+
+        var currentDefault = await _context.Addresses
+            .FirstOrDefaultAsync(d => d.UserId == userId);
+
+        if (currentDefault is not null)
+        {
+            currentDefault.Id = addressId;
+            _context.Addresses.Update(currentDefault);
+        }
+        else
+        {
+            _context.Addresses.Add(new Address
+            {
+                UserId = userId,
+                Id = addressId
+            });
+        }
+
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task<Address?> GetDefaultAddressAsync(long userId)
+    {
+        var defaultRecord = await _context.Addresses
+            .AsNoTracking()
+            .FirstOrDefaultAsync(d => d.UserId == userId);
+
+        if (defaultRecord is null)
+            return null;
+
+        return await _context.Addresses
+            .AsNoTracking()
+            .FirstOrDefaultAsync(a => a.Id == defaultRecord.Id);
+    }
+
+    public async Task<bool> ExistsAsync(long id, long userId)
+    {
+        return await _context.Addresses
+            .AnyAsync(a => a.Id == id && a.UserId == userId);
+    }
 }

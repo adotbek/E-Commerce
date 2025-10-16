@@ -6,7 +6,10 @@ public interface IBannerService
 {
     Task<long> AddBannerAsync(BannerCreateDto dto);
     Task<ICollection<BannerGetDto>> GetAllAsync();
+    Task<ICollection<BannerGetDto>> GetActiveAsync();
     Task<BannerGetDto?> GetByIdAsync(long id);
     Task UpdateAsync(long id, BannerUpdateDto dto);
+    Task ToggleActiveAsync(long id);
     Task DeleteAsync(long id);
 }
+

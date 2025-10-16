@@ -47,4 +47,14 @@ public class BannerService : IBannerService
     {
         await _repository.DeleteAsync(id);
     }
+
+    public Task<ICollection<BannerGetDto>> GetActiveAsync()
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task ToggleActiveAsync(long id)
+    {
+        throw new NotImplementedException();
+    }
 }

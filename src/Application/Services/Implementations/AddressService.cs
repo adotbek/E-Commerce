@@ -1,6 +1,7 @@
 ﻿using Application.Dtos;
 using Application.Common.Interfaces.Repositories;
 using Application.Mappers;
+using Core.Errors;
 
 namespace Application.Services;
 
@@ -45,5 +46,23 @@ public class AddressService : IAddressService
     public async Task DeleteAsync(long id)
     {
         await _repository.DeleteAsync(id);
+    }
+
+
+    public async Task SetDefaultAddressAsync(long userId, long addressId)
+    {
+        await _repository.SetDefaultAddressAsync(userId,addressId);
+    }
+
+    public async Task<AddressGetDto?> GetDefaultAddressAsync(long userId)
+    {
+        var res = await _repository.GetDefaultAddressAsync(userId);
+        if (res is null) throw new EntityNotFoundException($"Not found {userId}");
+        return AddressMapper.ToDto(res);
+    }
+
+    public async Task<bool> ExistsAsync(long id, long userId)
+    {
+        return await _repository.ExistsAsync(id,userId);
     }
 }

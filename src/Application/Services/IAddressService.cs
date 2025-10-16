@@ -9,4 +9,8 @@ public interface IAddressService
     Task<AddressGetDto?> GetByIdAsync(long id);
     Task UpdateAsync(long id, AddressUpdateDto dto);
     Task DeleteAsync(long id);
+
+    Task SetDefaultAddressAsync(long userId, long addressId);
+    Task<AddressGetDto?> GetDefaultAddressAsync(long userId);
+    Task<bool> ExistsAsync(long id, long userId);
 }
