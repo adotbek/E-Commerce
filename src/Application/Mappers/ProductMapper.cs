@@ -43,4 +43,20 @@ public static class ProductMapper
             IsNewArrival = dto.IsNewArrival
         };
     }
+
+    public static void UpdateEntity(this Product entity, ProductDto dto, long categoryId)
+    {
+        entity.CategoryId = categoryId;
+        entity.Name = dto.Name;
+        entity.Description = dto.Description;
+        entity.Price = dto.Price;
+        entity.DiscountPrice = dto.DiscountPrice;
+        entity.StockQuantity = dto.StockQuantity;
+        entity.Brand = dto.Brand;
+        entity.Rating = dto.Rating;
+        entity.ReviewCount = dto.ReviewCount;
+        entity.ImageUrl = dto.ImageUrl;
+        entity.IsFeatured = dto.IsFeatured;
+        entity.IsNewArrival = dto.IsNewArrival;
+    }
 }

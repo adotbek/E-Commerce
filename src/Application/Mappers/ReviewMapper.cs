@@ -31,4 +31,13 @@ public static class ReviewMapper
             CreatedAt = dto.CreatedAt
         };
     }
+
+    public static void UpdateEntity(this Review entity, ReviewDto dto)
+    {
+        entity.UserId = dto.UserId;
+        entity.ProductId = dto.ProductId;
+        entity.Rating = dto.Rating;
+        entity.Comment = dto.Comment;
+        entity.CreatedAt = dto.CreatedAt;
+    }
 }

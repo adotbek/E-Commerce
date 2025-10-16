@@ -2,6 +2,7 @@
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
 using Application.Mappers;
+using Microsoft.IdentityModel.Abstractions;
 
 namespace Application.Services;
 
@@ -34,24 +35,24 @@ public class ProductService : IProductService
         if (category is null)
             throw new KeyNotFoundException($"Category with ID {categoryId} not found.");
 
-        var entity = ProductMapper.ToEntity(dto);
+        var entity = ProductMapper.ToEntity(dto,categoryId);
         entity.CategoryId = categoryId;
 
         await _repository.AddAsync(entity);
         return entity.Id;
     }
 
-    public async Task UpdateAsync(ProductDto dto, long categoryId)
+    public async Task UpdateAsync(ProductDto dto, long categoryId, long id)
     {
-        var entity = await _repository.GetByIdAsync(dto.Id);
+        var entity = await _repository.GetByIdAsync(id);
         if (entity is null)
-            throw new KeyNotFoundException($"Product with ID {dto.Id} not found.");
+            throw new KeyNotFoundException($"Product with ID {id} not found.");
 
         var category = await _categoryRepository.GetByIdAsync(categoryId);
         if (category is null)
             throw new KeyNotFoundException($"Category with ID {categoryId} not found.");
 
-        ProductMapper.UpdateEntity(entity, dto);
+        ProductMapper.UpdateEntity(entity, dto,categoryId);
         entity.CategoryId = categoryId;
 
         await _repository.UpdateAsync(entity);

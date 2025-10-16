@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251013095037_initialCreation")]
+    [Migration("20251016121751_initialCreation")]
     partial class initialCreation
     {
         /// <inheritdoc />
@@ -167,24 +167,14 @@ namespace Infrastructure.Persistence.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("ImageUrl")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<long?>("ParentCategoryId")
-                        .HasColumnType("bigint");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ParentCategoryId");
-
-                    b.ToTable("Categories");
+                    b.ToTable("Categories", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.Coupon", b =>
@@ -261,12 +251,17 @@ namespace Infrastructure.Persistence.Migrations
                     b.Property<long>("FlashSaleId")
                         .HasColumnType("bigint");
 
+                    b.Property<long?>("FlashSaleId1")
+                        .HasColumnType("bigint");
+
                     b.Property<long>("ProductId")
                         .HasColumnType("bigint");
 
                     b.HasKey("Id");
 
                     b.HasIndex("FlashSaleId");
+
+                    b.HasIndex("FlashSaleId1");
 
                     b.HasIndex("ProductId");
 
@@ -807,15 +802,6 @@ namespace Infrastructure.Persistence.Migrations
                     b.Navigation("Product");
                 });
 
-            modelBuilder.Entity("Domain.Entities.Category", b =>
-                {
-                    b.HasOne("Domain.Entities.Category", "ParentCategory")
-                        .WithMany("SubCategories")
-                        .HasForeignKey("ParentCategoryId");
-
-                    b.Navigation("ParentCategory");
-                });
-
             modelBuilder.Entity("Domain.Entities.FlashSaleItem", b =>
                 {
                     b.HasOne("Domain.Entities.FlashSale", "FlashSale")
@@ -823,6 +809,10 @@ namespace Infrastructure.Persistence.Migrations
                         .HasForeignKey("FlashSaleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("Domain.Entities.FlashSale", null)
+                        .WithMany("Items")
+                        .HasForeignKey("FlashSaleId1");
 
                     b.HasOne("Domain.Entities.Product", "Product")
                         .WithMany()
@@ -1006,8 +996,11 @@ namespace Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Domain.Entities.Category", b =>
                 {
                     b.Navigation("Products");
+                });
 
-                    b.Navigation("SubCategories");
+            modelBuilder.Entity("Domain.Entities.FlashSale", b =>
+                {
+                    b.Navigation("Items");
                 });
 
             modelBuilder.Entity("Domain.Entities.Order", b =>

@@ -37,19 +37,11 @@ namespace Infrastructure.Persistence.Migrations
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ParentCategoryId = table.Column<long>(type: "bigint", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Categories", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Categories_Categories_ParentCategoryId",
-                        column: x => x.ParentCategoryId,
-                        principalTable: "Categories",
-                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -196,7 +188,8 @@ namespace Infrastructure.Persistence.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     ProductId = table.Column<long>(type: "bigint", nullable: false),
                     FlashSaleId = table.Column<long>(type: "bigint", nullable: false),
-                    DiscountedPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
+                    DiscountedPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    FlashSaleId1 = table.Column<long>(type: "bigint", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -207,6 +200,11 @@ namespace Infrastructure.Persistence.Migrations
                         principalTable: "FlashSales",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_FlashSaleItems_FlashSales_FlashSaleId1",
+                        column: x => x.FlashSaleId1,
+                        principalTable: "FlashSales",
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_FlashSaleItems_Products_ProductId",
                         column: x => x.ProductId,
@@ -540,11 +538,6 @@ namespace Infrastructure.Persistence.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Categories_ParentCategoryId",
-                table: "Categories",
-                column: "ParentCategoryId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Confirmers_Email",
                 table: "Confirmers",
                 column: "Email",
@@ -560,6 +553,11 @@ namespace Infrastructure.Persistence.Migrations
                 name: "IX_FlashSaleItems_FlashSaleId",
                 table: "FlashSaleItems",
                 column: "FlashSaleId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_FlashSaleItems_FlashSaleId1",
+                table: "FlashSaleItems",
+                column: "FlashSaleId1");
 
             migrationBuilder.CreateIndex(
                 name: "IX_FlashSaleItems_ProductId",

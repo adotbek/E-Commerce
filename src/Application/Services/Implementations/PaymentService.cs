@@ -34,11 +34,11 @@ public class PaymentService : IPaymentService
         return entity.Id;
     }
 
-    public async Task UpdateAsync(PaymentUpdateDto dto)
+    public async Task UpdateAsync(PaymentUpdateDto dto, long id)
     {
-        var entity = await _repository.GetByIdAsync(dto.Id);
+        var entity = await _repository.GetByIdAsync(id);
         if (entity is null)
-            throw new KeyNotFoundException($"Payment with ID {dto.Id} not found.");
+            throw new KeyNotFoundException($"Payment with ID {id} not found.");
 
         PaymentMapper.UpdateEntity(entity, dto);
         await _repository.UpdateAsync(entity);

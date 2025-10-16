@@ -1,6 +1,7 @@
 ﻿using Application.Dtos;
 using Application.Interfaces;
 using Application.Mappers;
+using Core.Errors;
 using Domain.Repositories;
 
 namespace Application.Services;
@@ -17,40 +18,36 @@ public class WishlistItemService : IWishlistItemService
     public async Task<IEnumerable<WishlistItemGetDto>> GetAllAsync()
     {
         var entities = await _repository.GetAllAsync();
-        return entities.Select(WishlistItemMapper.ToGetDto).ToList();
+        return entities.Select(WishlistItemMapper.ToDto).ToList();
     }
 
     public async Task<WishlistItemGetDto?> GetByIdAsync(long id)
     {
         var entity = await _repository.GetByIdAsync(id);
-        return entity is null ? null : WishlistItemMapper.ToGetDto(entity);
+        return entity is null ? null : WishlistItemMapper.ToDto(entity);
     }
 
-    public async Task<WishlistItemGetDto> CreateAsync(WishlistItemGetDto dto)
+    public async Task<long> AddWishlistItemAsync(WishlistItemGetDto dto)
     {
         var entity = WishlistItemMapper.ToEntity(dto);
         await _repository.AddAsync(entity);
-        return WishlistItemMapper.ToGetDto(entity);
+        return entity.Id;
     }
 
-    public async Task<WishlistItemGetDto?> UpdateAsync(long id, WishlistItemGetDto dto)
+    public async Task UpdateAsync(long id, WishlistItemGetDto dto)
     {
         var existing = await _repository.GetByIdAsync(id);
-        if (existing is null)
-            return null;
+        if (existing is null) throw new EntityNotFoundException($"Wishlist item with ID {id} not found");
 
-        existing.ProductId = dto.ProductId;
-        await _repository.UpdateAsync(existing);        
-        return WishlistItemMapper.ToGetDto(existing);
+        WishlistItemMapper.UpdateEntity(existing, dto);
+        await _repository.UpdateAsync(existing);
     }
 
-    public async Task<bool> DeleteAsync(long id)
+    public async Task DeleteAsync(long id)
     {
-        var entity = await _repository.GetByIdAsync(id);
-        if (entity is null)
-            return false;
+        var existing = await _repository.GetByIdAsync(id);
+        if (existing is null) throw new EntityNotFoundException($"Wishlist with ID{id} not found");
 
-        await _repository.DeleteAsync(entity);
-        return true;
+        await _repository.DeleteAsync(existing);
     }
 }

@@ -11,7 +11,7 @@ public static class WishlistMapper
         {
             Id = entity.Id,
             UserId = entity.UserId,
-            Items = entity.Items?.Select(WishlistItemMapper.ToGetDto).ToList()
+            Items = entity.Items?.Select(WishlistItemMapper.ToDto).ToList()
         };
     }
 
@@ -26,6 +26,15 @@ public static class WishlistMapper
             }).ToList()
         };
     }
+
+    public static void UpdateEntity(Wishlist entity, WishlistCreateDto dto)
+    {
+        entity.UserId = dto.UserId;
+
+        entity.Items = dto.ProductIds?.Select(id => new WishlistItem
+        {
+            ProductId = id,
+            WishlistId = entity.Id
+        }).ToList();
+    }
 }
-
-

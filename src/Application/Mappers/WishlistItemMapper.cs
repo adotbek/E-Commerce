@@ -5,7 +5,7 @@ namespace Application.Mappers;
 
 public static class WishlistItemMapper
 {
-    public static WishlistItemGetDto ToGetDto(WishlistItem entity)
+    public static WishlistItemGetDto ToDto(WishlistItem entity)
     {
         return new WishlistItemGetDto
         {
@@ -23,5 +23,10 @@ public static class WishlistItemMapper
             Id = dto.Id,
             ProductId = dto.ProductId
         };
+    }
+
+    public static void UpdateEntity(WishlistItem entity, WishlistItemGetDto dto)
+    {
+        entity.ProductId = dto.ProductId;
     }
 }
