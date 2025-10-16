@@ -5,7 +5,7 @@ namespace Application.Mappers;
 
 public static class CouponMapper
 {
-    public static CouponGetDto ToGetDto(Coupon entity)
+    public static CouponGetDto ToDto(Coupon entity)
     {
         return new CouponGetDto
         {

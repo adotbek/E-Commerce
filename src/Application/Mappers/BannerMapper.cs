@@ -5,7 +5,7 @@ namespace Application.Mappers;
 
 public static class BannerMapper
 {
-    public static BannerGetDto ToGetDto(Banner entity)
+    public static BannerGetDto ToDto(Banner entity)
     {
         return new BannerGetDto
         {

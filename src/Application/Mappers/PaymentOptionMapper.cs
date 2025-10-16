@@ -5,7 +5,7 @@ namespace Application.Mappers;
 
 public static class PaymentOptionMapper
 {
-    public static PaymentOptionGetDto ToGetDto(PaymentOption entity)
+    public static PaymentOptionGetDto ToDto(PaymentOption entity)
     {
         return new PaymentOptionGetDto
         {

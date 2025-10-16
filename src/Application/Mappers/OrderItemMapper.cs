@@ -5,7 +5,7 @@ namespace Application.Mappers;
 
 public static class OrderItemMapper
 {
-    public static OrderItemGetDto ToGetDto(OrderItem entity)
+    public static OrderItemGetDto ToDto(OrderItem entity)
     {
         return new OrderItemGetDto
         {

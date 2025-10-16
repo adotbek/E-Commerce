@@ -5,7 +5,7 @@ namespace Application.Mappers;
 
 public static class OrderMapper
 {
-    public static OrderGetDto ToGetDto(Order entity)
+    public static OrderGetDto ToDto(Order entity)
     {
         return new OrderGetDto
         {
@@ -16,7 +16,7 @@ public static class OrderMapper
             PaymentMethod = entity.PaymentMethod,
             Status = entity.Status,
             CreatedAt = entity.CreatedAt,
-            Items = entity.Items?.Select(OrderItemMapper.ToGetDto).ToList()
+            Items = entity.Items?.Select(OrderItemMapper.ToDto).ToList()
         };
     }
 

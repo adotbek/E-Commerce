@@ -5,7 +5,7 @@ namespace Application.Mappers;
 
 public static class FlashSaleMapper
 {
-    public static FlashSaleGetDto ToGetDto(FlashSale entity)
+    public static FlashSaleGetDto ToDto(FlashSale entity)
     {
         return new FlashSaleGetDto
         {

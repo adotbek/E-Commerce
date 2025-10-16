@@ -16,8 +16,8 @@ public class ProductImageService : IProductImageService
 
     public async Task<IEnumerable<ProductImageDto>> GetAllAsync()
     {
-        var entities = await _repository.GetAllAsync();
-        return entities.Select(ProductImageMapper.ToDto);
+        var images = await _repository.GetAllAsync();
+        return images.Select(ProductImageMapper.ToDto).ToList();
     }
 
     public async Task<ProductImageDto?> GetByIdAsync(long id)
@@ -26,31 +26,25 @@ public class ProductImageService : IProductImageService
         return entity is null ? null : ProductImageMapper.ToDto(entity);
     }
 
-    public async Task<ProductImageDto> CreateAsync(ProductImageDto dto)
+    public async Task<long> AddProductImageAsync(ProductImageDto dto)
     {
         var entity = ProductImageMapper.ToEntity(dto);
-        var created = await _repository.AddAsync(entity);
-        return ProductImageMapper.ToDto(created);
+        await _repository.AddAsync(entity);
+        return entity.Id;
     }
 
-    public async Task<ProductImageDto> UpdateAsync(ProductImageDto dto)
+    public async Task UpdateAsync(ProductImageDto dto, long id)
     {
-        var existing = await _repository.GetByIdAsync(dto.Id);
-        if (existing is null)
-            throw new KeyNotFoundException($"ProductImage with Id={dto.Id} not found.");
+        var entity = await _repository.GetByIdAsync(id);
+        if (entity is null)
+            throw new KeyNotFoundException($"Product image with ID {id} not found.");
 
-        ProductImageMapper.UpdateEntity(existing, dto);
-
-        var updated = await _repository.UpdateAsync(existing);
-        return ProductImageMapper.ToDto(updated);
+        ProductImageMapper.UpdateEntity(entity, dto);
+        await _repository.UpdateAsync(entity);
     }
 
     public async Task DeleteAsync(long id)
     {
-        var existing = await _repository.GetByIdAsync(id);
-        if (existing is null)
-            throw new KeyNotFoundException($"ProductImage with Id={id} not found.");
-
         await _repository.DeleteAsync(id);
     }
 }

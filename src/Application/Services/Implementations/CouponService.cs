@@ -1,49 +1,57 @@
-﻿using Application.Dtos;
+﻿using Application.Common.Interfaces.Repositories;
+using Application.Dtos;
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
 using Application.Mappers;
 
 namespace Application.Services;
 
-public class CouponService(ICouponRepository repository) : ICouponService
+public class CouponService : ICouponService
 {
-    public async Task<CouponGetDto> CreateAsync(CouponCreateDto dto)
+    private readonly ICouponRepository _repository;
+
+    public CouponService(ICouponRepository repository)
+    {
+        _repository = repository;
+    }
+
+    public async Task<long> AddCouponAsync(CouponCreateDto dto)
     {
         var entity = CouponMapper.ToEntity(dto);
-        var created = await repository.CreateAsync(entity);
-        return CouponMapper.ToGetDto(created);
+        await _repository.AddAsync(entity);
+        return entity.Id;
     }
 
     public async Task<CouponGetDto?> GetByIdAsync(long id)
     {
-        var entity = await repository.GetByIdAsync(id);
-        return entity is null ? null : CouponMapper.ToGetDto(entity);
+        var entity = await _repository.GetByIdAsync(id);
+        return entity is null ? null : CouponMapper.ToDto(entity);
     }
 
     public async Task<CouponGetDto?> GetByCodeAsync(string code)
     {
-        var entity = await repository.GetByCodeAsync(code);
-        return entity is null ? null : CouponMapper.ToGetDto(entity);
+        var entity = await _repository.GetByCodeAsync(code);
+        return entity is null ? null : CouponMapper.ToDto(entity);
     }
 
     public async Task<IEnumerable<CouponGetDto>> GetAllAsync()
     {
-        var entities = await repository.GetAllAsync();
-        return entities.Select(CouponMapper.ToGetDto);
+        var entities = await _repository.GetAllAsync();
+        return entities.Select(CouponMapper.ToDto);
     }
 
-    public async Task<CouponGetDto?> UpdateAsync(long id, CouponUpdateDto dto)
+    public async Task UpdateAsync(long id, CouponUpdateDto dto)
     {
-        var entity = await repository.GetByIdAsync(id);
-        if (entity is null) return null;
+        var entity = await _repository.GetByIdAsync(id);
+        if (entity is null)
+            throw new KeyNotFoundException($"Coupon with ID {id} not found.");
 
         CouponMapper.UpdateEntity(entity, dto);
-        var updated = await repository.UpdateAsync(entity);
-        return CouponMapper.ToGetDto(updated);
+        await _repository.UpdateAsync(entity);
     }
 
-    public async Task<bool> DeleteAsync(long id)
+    public async Task DeleteAsync(long id)
     {
-        return await repository.DeleteAsync(id);
+        await _repository.DeleteAsync(id);
     }
 }

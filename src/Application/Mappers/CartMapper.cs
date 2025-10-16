@@ -5,7 +5,7 @@ namespace Application.Mappers;
 
 public static class CartMapper
 {
-    public static CartGetDto ToGetDto(Cart entity)
+    public static CartGetDto ToDto(Cart entity)
     {
         return new CartGetDto
         {

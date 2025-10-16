@@ -14,22 +14,23 @@ public class BannerService : IBannerService
         _repository = repository;
     }
 
-    public async Task AddBannerAsync(BannerCreateDto dto)
+    public async Task<long> AddBannerAsync(BannerCreateDto dto)
     {
         var entity = BannerMapper.ToEntity(dto);
         await _repository.AddAsync(entity);
+        return entity.Id;
     }
 
     public async Task<ICollection<BannerGetDto>> GetAllAsync()
     {
         var banners = await _repository.GetAllAsync();
-        return banners.Select(BannerMapper.ToGetDto).ToList();
+        return banners.Select(BannerMapper.ToDto).ToList();
     }
 
     public async Task<BannerGetDto?> GetByIdAsync(long id)
     {
         var entity = await _repository.GetByIdAsync(id);
-        return entity is null ? null : BannerMapper.ToGetDto(entity);
+        return entity is null ? null : BannerMapper.ToDto(entity);
     }
 
     public async Task UpdateAsync(long id, BannerUpdateDto dto)

@@ -1,11 +1,12 @@
 ﻿namespace Application.Mappers;
 
 using Application.Dtos;
+using Application.DTOs.FlashSaleItems;
 using Domain.Entities;
 
 public static class FlashSaleItemMapper
 {
-    public static FlashSaleItemGetDto ToGetDto(FlashSaleItem entity)
+    public static FlashSaleItemGetDto ToDto(FlashSaleItem entity)
         => new()
         {
             Id = entity.Id,
@@ -17,10 +18,9 @@ public static class FlashSaleItemMapper
             FlashSaleId = entity.FlashSaleId
         };
 
-    public static FlashSaleItem ToEntity(FlashSaleItemGetDto dto)
+    public static FlashSaleItem ToEntity(FlashSaleItemCreateDto dto)
         => new()
         {
-            Id = dto.Id,
             ProductId = dto.ProductId,
             DiscountedPrice = dto.DiscountedPrice,
             FlashSaleId = dto.FlashSaleId

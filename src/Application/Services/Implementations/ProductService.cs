@@ -2,23 +2,24 @@
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
 using Application.Mappers;
-using Domain.Entities;
 
 namespace Application.Services;
 
 public class ProductService : IProductService
 {
     private readonly IProductRepository _repository;
+    private readonly ICategoryRepository _categoryRepository;
 
-    public ProductService(IProductRepository repository)
+    public ProductService(IProductRepository repository, ICategoryRepository categoryRepository)
     {
         _repository = repository;
+        _categoryRepository = categoryRepository;
     }
 
     public async Task<IEnumerable<ProductDto>> GetAllAsync()
     {
-        var entities = await _repository.GetAllAsync();
-        return entities.Select(ProductMapper.ToDto);
+        var products = await _repository.GetAllAsync();
+        return products.Select(ProductMapper.ToDto).ToList();
     }
 
     public async Task<ProductDto?> GetByIdAsync(long id)
@@ -27,30 +28,37 @@ public class ProductService : IProductService
         return entity is null ? null : ProductMapper.ToDto(entity);
     }
 
-    public async Task<ProductDto> CreateAsync(ProductDto dto, long categoryId)
+    public async Task<long> AddProductAsync(ProductDto dto, long categoryId)
     {
-        var entity = ProductMapper.ToEntity(dto, categoryId);
-        var created = await _repository.AddAsync(entity);
-        return ProductMapper.ToDto(created);
+        var category = await _categoryRepository.GetByIdAsync(categoryId);
+        if (category is null)
+            throw new KeyNotFoundException($"Category with ID {categoryId} not found.");
+
+        var entity = ProductMapper.ToEntity(dto);
+        entity.CategoryId = categoryId;
+
+        await _repository.AddAsync(entity);
+        return entity.Id;
     }
 
-    public async Task<ProductDto> UpdateAsync(ProductDto dto, long categoryId)
+    public async Task UpdateAsync(ProductDto dto, long categoryId)
     {
-        var existing = await _repository.GetByIdAsync(dto.Id);
-        if (existing is null)
-            throw new KeyNotFoundException($"Product with Id={dto.Id} not found.");
+        var entity = await _repository.GetByIdAsync(dto.Id);
+        if (entity is null)
+            throw new KeyNotFoundException($"Product with ID {dto.Id} not found.");
 
-        ProductMapper.UpdateEntity(existing, dto, categoryId);
+        var category = await _categoryRepository.GetByIdAsync(categoryId);
+        if (category is null)
+            throw new KeyNotFoundException($"Category with ID {categoryId} not found.");
 
-        var updated = await _repository.UpdateAsync(existing);
-        return ProductMapper.ToDto(updated);
+        ProductMapper.UpdateEntity(entity, dto);
+        entity.CategoryId = categoryId;
+
+        await _repository.UpdateAsync(entity);
     }
 
-    public async Task<bool> DeleteAsync(long id)
+    public async Task DeleteAsync(long id)
     {
-        var deleted = await _repository.DeleteAsync(id);
-        if (!deleted)
-            throw new KeyNotFoundException($"Product with Id={id} not found.");
-        return true;
+        await _repository.DeleteAsync(id);
     }
 }

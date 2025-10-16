@@ -1,6 +1,6 @@
 ﻿using Application.Dtos;
-using Application.Mappers;
 using Application.Common.Interfaces.Repositories;
+using Application.Mappers;
 
 namespace Application.Services;
 
@@ -13,10 +13,11 @@ public class AddressService : IAddressService
         _repository = repository;
     }
 
-    public async Task AddAddressAsync(AddressCreateDto dto)
+    public async Task<long> AddAddressAsync(AddressCreateDto dto)
     {
         var entity = AddressMapper.ToEntity(dto);
         await _repository.AddAsync(entity);
+        return entity.Id;
     }
 
     public async Task<ICollection<AddressGetDto>> GetByUserIdAsync(long userId)

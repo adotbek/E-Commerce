@@ -1,4 +1,5 @@
-﻿using Application.Dtos;
+﻿using Application.Common.Interfaces.Repositories;
+using Application.Dtos;
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
 using Application.Mappers;
@@ -7,51 +8,51 @@ namespace Application.Services;
 
 public class FlashSaleService : IFlashSaleService
 {
-    private readonly IFlashSaleRepository _repo;
+    private readonly IFlashSaleRepository _repository;
 
-    public FlashSaleService(IFlashSaleRepository repo)
+    public FlashSaleService(IFlashSaleRepository repository)
     {
-        _repo = repo;
+        _repository = repository;
     }
 
-    public async Task<FlashSaleGetDto> CreateAsync(FlashSaleCreateDto dto)
+    public async Task<long> AddFlashSaleAsync(FlashSaleCreateDto dto)
     {
         var entity = FlashSaleMapper.ToEntity(dto);
-        var created = await _repo.CreateAsync(entity);
-        return FlashSaleMapper.ToGetDto(created);
+        await _repository.AddAsync(entity);
+        return entity.Id;
     }
 
     public async Task<FlashSaleGetDto?> GetByIdAsync(long id)
     {
-        var entity = await _repo.GetByIdAsync(id);
-        return entity is null ? null : FlashSaleMapper.ToGetDto(entity);
+        var entity = await _repository.GetByIdAsync(id);
+        return entity is null ? null : FlashSaleMapper.ToDto(entity);
     }
 
     public async Task<IEnumerable<FlashSaleGetDto>> GetAllAsync()
     {
-        var list = await _repo.GetAllAsync();
-        return list.Select(FlashSaleMapper.ToGetDto).ToList();
+        var entities = await _repository.GetAllAsync();
+        return entities.Select(FlashSaleMapper.ToDto);
     }
 
     public async Task<IEnumerable<FlashSaleGetDto>> GetActiveAsync(DateTime? at = null)
     {
-        var when = at ?? DateTime.UtcNow;
-        var list = await _repo.GetActiveAsync(when);
-        return list.Select(FlashSaleMapper.ToGetDto).ToList();
+        var date = at ?? DateTime.UtcNow;
+        var activeSales = await _repository.GetActiveAsync(date);
+        return activeSales.Select(FlashSaleMapper.ToDto);
     }
 
-    public async Task<FlashSaleGetDto?> UpdateAsync(long id, FlashSaleUpdateDto dto)
+    public async Task UpdateAsync(long id, FlashSaleUpdateDto dto)
     {
-        var existing = await _repo.GetByIdAsync(id);
-        if (existing is null) return null;
+        var entity = await _repository.GetByIdAsync(id);
+        if (entity is null)
+            throw new KeyNotFoundException($"FlashSale with ID {id} not found.");
 
-        FlashSaleMapper.UpdateEntity(existing, dto);
-        var updated = await _repo.UpdateAsync(existing);
-        return FlashSaleMapper.ToGetDto(updated);
+        FlashSaleMapper.UpdateEntity(entity, dto);
+        await _repository.UpdateAsync(entity);
     }
 
-    public async Task<bool> DeleteAsync(long id)
+    public async Task DeleteAsync(long id)
     {
-        return await _repo.DeleteAsync(id);
+        await _repository.DeleteAsync(id);
     }
 }

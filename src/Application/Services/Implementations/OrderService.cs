@@ -1,4 +1,5 @@
-﻿using Application.Dtos;
+﻿using Application.Common.Interfaces.Repositories;
+using Application.Dtos;
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
 using Application.Mappers;
@@ -17,37 +18,34 @@ public class OrderService : IOrderService
     public async Task<IEnumerable<OrderGetDto>> GetAllAsync()
     {
         var entities = await _repository.GetAllAsync();
-        return entities.Select(OrderMapper.ToGetDto);
+        return entities.Select(OrderMapper.ToDto);
     }
 
     public async Task<OrderGetDto?> GetByIdAsync(long id)
     {
         var entity = await _repository.GetByIdAsync(id);
-        return entity is null ? null : OrderMapper.ToGetDto(entity);
+        return entity is null ? null : OrderMapper.ToDto(entity);
     }
 
-    public async Task<OrderGetDto> CreateAsync(OrderCreateDto dto)
+    public async Task<long> AddOrderAsync(OrderCreateDto dto)
     {
         var entity = OrderMapper.ToEntity(dto);
-        var created = await _repository.AddAsync(entity);
-        return OrderMapper.ToGetDto(created);
+        await _repository.AddAsync(entity);
+        return entity.Id;
     }
 
-    public async Task<OrderGetDto> UpdateAsync(OrderUpdateDto dto)
+    public async Task UpdateAsync(OrderUpdateDto dto, long id)
     {
-        var existing = await _repository.GetByIdAsync(dto.Id)
-            ?? throw new KeyNotFoundException($"Order with Id={dto.Id} not found.");
+        var entity = await _repository.GetByIdAsync(id);
+        if (entity is null)
+            throw new KeyNotFoundException($"Order with ID {id} not found.");
 
-        OrderMapper.UpdateEntity(existing, dto);
-        var updated = await _repository.UpdateAsync(existing);
-        return OrderMapper.ToGetDto(updated);
+        OrderMapper.UpdateEntity(entity, dto);
+        await _repository.UpdateAsync(entity);
     }
 
     public async Task DeleteAsync(long id)
     {
-        var existing = await _repository.GetByIdAsync(id)
-            ?? throw new KeyNotFoundException($"Order with Id={id} not found.");
-
         await _repository.DeleteAsync(id);
     }
 }
