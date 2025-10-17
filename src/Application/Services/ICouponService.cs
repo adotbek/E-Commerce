@@ -10,4 +10,8 @@ public interface ICouponService
     Task<IEnumerable<CouponGetDto>> GetAllAsync();
     Task UpdateAsync(long id, CouponUpdateDto dto);
     Task DeleteAsync(long id);
+    Task<bool> ValidateCouponAsync(string code);
+    Task<decimal> ApplyCouponAsync(string code, decimal totalPrice);
+    Task<IEnumerable<CouponGetDto>> GetActiveCouponsAsync();
+
 }

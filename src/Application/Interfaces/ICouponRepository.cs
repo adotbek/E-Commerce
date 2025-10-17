@@ -1,4 +1,5 @@
-﻿using Domain.Entities;
+﻿using Application.Dtos;
+using Domain.Entities;
 
 namespace Application.Interfaces.Repositories;
 
@@ -10,4 +11,8 @@ public interface ICouponRepository
     Task<IEnumerable<Coupon>> GetAllAsync();
     Task UpdateAsync(Coupon entity);
     Task DeleteAsync(long id);
+    Task<bool> ValidateCouponAsync(string code);
+    Task<decimal> ApplyCouponAsync(string code, decimal totalPrice);
+    Task<IEnumerable<Coupon>> GetActiveCouponsAsync();
+
 }

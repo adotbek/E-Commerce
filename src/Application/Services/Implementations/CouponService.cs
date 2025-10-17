@@ -1,5 +1,4 @@
-﻿using Application.Common.Interfaces.Repositories;
-using Application.Dtos;
+﻿using Application.Dtos;
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
 using Application.Mappers;
@@ -53,5 +52,21 @@ public class CouponService : ICouponService
     public async Task DeleteAsync(long id)
     {
         await _repository.DeleteAsync(id);
+    }
+
+    public async Task<bool> ValidateCouponAsync(string code)
+    {
+        return await _repository.ValidateCouponAsync(code);
+    }
+
+    public async Task<decimal> ApplyCouponAsync(string code, decimal totalPrice)
+    {
+        return await _repository.ApplyCouponAsync(code, totalPrice);
+    }
+
+    public async Task<IEnumerable<CouponGetDto>> GetActiveCouponsAsync()
+    {
+        var coupons = await _repository.GetActiveCouponsAsync();
+        return coupons.Select(CouponMapper.ToDto);
     }
 }

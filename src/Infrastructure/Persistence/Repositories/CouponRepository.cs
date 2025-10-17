@@ -53,4 +53,34 @@ public class CouponRepository : ICouponRepository
         _context.Coupons.Remove(existing);
         await _context.SaveChangesAsync();
     }
+
+    public async Task<bool> ValidateCouponAsync(string code)
+    {
+        var coupon = await _context.Coupons.FirstOrDefaultAsync(c => c.Code == code);
+        if (coupon is null) return false;
+        if (!coupon.IsActive) return false;
+        if (coupon.ValidUntil < DateTime.UtcNow) return false;
+
+        return true;
+    }
+
+    public async Task<decimal> ApplyCouponAsync(string code, decimal totalPrice)
+    {
+        var coupon = await _context.Coupons.FirstOrDefaultAsync(c => c.Code == code);
+        if (coupon is null || !coupon.IsActive || coupon.ValidUntil < DateTime.UtcNow)
+            throw new InvalidOperationException("Kupon yaroqsiz yoki muddati o‘tgan.");
+
+        var discountAmount = totalPrice * (decimal)(coupon.DiscountPercent / 100.0);
+        var newTotal = totalPrice - discountAmount;
+
+        return newTotal < 0 ? 0 : newTotal;
+    }
+
+    public async Task<IEnumerable<Coupon>> GetActiveCouponsAsync()
+    {
+        return await _context.Coupons
+            .Where(c => c.IsActive && c.ValidUntil >= DateTime.UtcNow)
+            .OrderBy(c => c.ValidUntil)
+            .ToListAsync();
+    }
 }
