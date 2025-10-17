@@ -20,6 +20,7 @@ public class OrderRepository : IOrderRepository
             .Include(o => o.User)
             .Include(o => o.Items)
             .ThenInclude(oi => oi.Product)
+            .OrderByDescending(o => o.CreatedAt)
             .ToListAsync();
     }
 
@@ -49,9 +50,39 @@ public class OrderRepository : IOrderRepository
     {
         var existing = await _context.Orders.FindAsync(id);
         if (existing is null)
-            return;
+            throw new KeyNotFoundException($"Order with Id={id} not found.");
 
         _context.Orders.Remove(existing);
         await _context.SaveChangesAsync();
+    }
+
+    public async Task<IEnumerable<Order>> GetByUserIdAsync(long userId)
+    {
+        return await _context.Orders
+            .Include(o => o.Items)
+            .ThenInclude(i => i.Product)
+            .Where(o => o.UserId == userId)
+            .OrderByDescending(o => o.CreatedAt)
+            .ToListAsync();
+    }
+
+    public async Task UpdateStatusAsync(long id, string status)
+    {
+        var order = await _context.Orders.FindAsync(id);
+        if (order is null)
+            throw new KeyNotFoundException($"Order with Id={id} not found.");
+
+        order.Status = status;
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task<IEnumerable<Order>> GetByStatusAsync(string status)
+    {
+        return await _context.Orders
+            .Include(o => o.Items)
+            .ThenInclude(i => i.Product)
+            .Where(o => o.Status == status)
+            .OrderByDescending(o => o.CreatedAt)
+            .ToListAsync();
     }
 }

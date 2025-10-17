@@ -1,5 +1,4 @@
-﻿using Application.Common.Interfaces.Repositories;
-using Application.Dtos;
+﻿using Application.Dtos;
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
 using Application.Mappers;
@@ -47,5 +46,21 @@ public class OrderItemService : IOrderItemService
     public async Task DeleteAsync(long id)
     {
         await _repository.DeleteAsync(id);
+    }
+
+    public async Task<IEnumerable<OrderItemGetDto>> GetByOrderIdAsync(long orderId)
+    {
+        var entities = await _repository.GetByOrderIdAsync(orderId);
+        return entities.Select(OrderItemMapper.ToDto);
+    }
+
+    public async Task<decimal> CalculateTotalAsync(long orderId)
+    {
+        return await _repository.CalculateTotalAsync(orderId);
+    }
+
+    public async Task<bool> ExistsAsync(long orderItemId)
+    {
+        return await _repository.ExistsAsync(orderItemId);
     }
 }

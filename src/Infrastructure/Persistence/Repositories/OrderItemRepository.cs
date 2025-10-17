@@ -52,4 +52,19 @@ public class OrderItemRepository : IOrderItemRepository
         _context.OrderItems.Remove(existing);
         await _context.SaveChangesAsync();
     }
+
+    public Task<IEnumerable<Order>> GetByOrderIdAsync(long orderId)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<decimal> CalculateTotalAsync(long orderId)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<bool> ExistsAsync(long orderItemId)
+    {
+        throw new NotImplementedException();
+    }
 }

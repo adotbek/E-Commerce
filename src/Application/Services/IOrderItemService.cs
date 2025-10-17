@@ -8,5 +8,8 @@ public interface IOrderItemService
     Task<OrderItemGetDto?> GetByIdAsync(long id);
     Task<long> AddOrderAsync(OrderItemCreateDto dto);
     Task UpdateAsync(OrderItemUpdateDto dto, long id);
-    Task DeleteAsync(long id);
+    Task DeleteAsync(long id);   
+    Task<IEnumerable<OrderItemGetDto>> GetByOrderIdAsync(long orderId);   
+    Task<decimal> CalculateTotalAsync(long orderId);   
+    Task<bool> ExistsAsync(long orderItemId);
 }
