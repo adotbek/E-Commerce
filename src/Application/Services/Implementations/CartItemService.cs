@@ -47,4 +47,29 @@ public class CartItemService : ICartItemService
     {
         await _repository.DeleteAsync(id);
     }
+
+    public async Task<IEnumerable<CartItemGetDto>> GetByUserIdAsync(long userId)
+    {
+        throw new NotImplementedException("Cart orqali userId bog‘lanmagan bo‘lsa, bu metod keyinroq implement qilinadi.");
+    }
+
+    public async Task IncrementQuantityAsync(long id, int amount = 1)
+    {
+        await _repository.IncrementQuantityAsync(id, amount);
+    }
+
+    public async Task DecrementQuantityAsync(long id, int amount = 1)
+    {
+        await _repository.DecrementQuantityAsync(id, amount);
+    }
+
+    public async Task ClearCartAsync(long cartId)
+    {
+        await _repository.ClearCartAsync(cartId);
+    }
+
+    public async Task<decimal> GetTotalPriceAsync(long cartId)
+    {
+        return await _repository.GetTotalPriceAsync(cartId);
+    }
 }

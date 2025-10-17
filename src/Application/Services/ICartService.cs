@@ -9,4 +9,7 @@ public interface ICartService
     Task<CartGetDto?> GetByUserIdAsync(long userId);
     Task UpdateAsync(long userId, CartUpdateDto dto);
     Task DeleteAsync(long id);
+    Task<bool> ExistsByUserIdAsync(long userId);
+    Task<decimal> CalculateTotalPriceAsync(long cartId);
+    Task ClearCartAsync(long cartId);
 }

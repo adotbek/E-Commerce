@@ -1,5 +1,4 @@
-﻿using Application.Common.Interfaces.Repositories;
-using Application.Dtos;
+﻿using Application.Dtos;
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
 using Application.Mappers;
@@ -47,5 +46,20 @@ public class CartService : ICartService
     public async Task DeleteAsync(long id)
     {
         await _repository.DeleteAsync(id);
+    }
+
+    public async Task<bool> ExistsByUserIdAsync(long userId)
+    {
+        return await _repository.ExistsByUserIdAsync(userId);
+    }
+
+    public async Task<decimal> CalculateTotalPriceAsync(long cartId)
+    {
+        return await _repository.CalculateTotalPriceAsync(cartId);
+    }
+
+    public async Task ClearCartAsync(long cartId)
+    {
+        await _repository.ClearCartAsync(cartId);
     }
 }

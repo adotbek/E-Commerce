@@ -51,4 +51,41 @@ public class CartItemRepository : ICartItemRepository
         _context.CartItems.Remove(entity);
         await _context.SaveChangesAsync();
     }
+
+    public async Task IncrementQuantityAsync(long id, int amount = 1)
+    {
+        var item = await _context.CartItems.FindAsync(id);
+        if (item is null)
+            throw new KeyNotFoundException($"Cart item with Id={id} not found.");
+
+        item.Quantity += amount;
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task DecrementQuantityAsync(long id, int amount = 1)
+    {
+        var item = await _context.CartItems.FindAsync(id);
+        if (item is null)
+            throw new KeyNotFoundException($"Cart item with Id={id} not found.");
+
+        item.Quantity -= amount;
+        if (item.Quantity <= 0)
+            _context.CartItems.Remove(item);
+
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task ClearCartAsync(long cartId)
+    {
+        var items = _context.CartItems.Where(ci => ci.CartId == cartId);
+        _context.CartItems.RemoveRange(items);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task<decimal> GetTotalPriceAsync(long cartId)
+    {
+        return await _context.CartItems
+            .Where(ci => ci.CartId == cartId)
+            .SumAsync(ci => ci.UnitPrice * ci.Quantity);
+    }
 }

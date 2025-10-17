@@ -2,7 +2,6 @@
 using Domain.Entities;
 using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
-using System;
 
 namespace Infrastructure.Repositories;
 
@@ -53,6 +52,35 @@ public class CartRepository : ICartRepository
             throw new KeyNotFoundException($"Cart with Id={id} not found.");
 
         _context.Carts.Remove(existing);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task<bool> ExistsByUserIdAsync(long userId)
+    {
+        return await _context.Carts.AnyAsync(c => c.UserId == userId);
+    }
+
+    public async Task<decimal> CalculateTotalPriceAsync(long cartId)
+    {
+        var cart = await _context.Carts
+            .Include(c => c.Items)
+            .ThenInclude(i => i.Product)
+            .FirstOrDefaultAsync(c => c.Id == cartId);
+
+        if (cart is null)
+            throw new KeyNotFoundException($"Cart with Id={cartId} not found.");
+
+        var total = cart.Items?.Sum(i => i.UnitPrice * i.Quantity) ?? 0;
+        cart.TotalPrice = total;
+
+        await _context.SaveChangesAsync();
+        return total;
+    }
+
+    public async Task ClearCartAsync(long cartId)
+    {
+        var items = _context.CartItems.Where(i => i.CartId == cartId);
+        _context.CartItems.RemoveRange(items);
         await _context.SaveChangesAsync();
     }
 }
