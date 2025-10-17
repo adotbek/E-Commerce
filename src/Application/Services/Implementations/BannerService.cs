@@ -2,6 +2,7 @@
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
 using Application.Mappers;
+using Domain.Entities;
 
 namespace Application.Services;
 
@@ -48,13 +49,20 @@ public class BannerService : IBannerService
         await _repository.DeleteAsync(id);
     }
 
-    public Task<ICollection<BannerGetDto>> GetActiveAsync()
+    public async Task<ICollection<BannerGetDto>> GetActiveAsync()
     {
-        throw new NotImplementedException();
+        var banners = await _repository.GetAllAsync();
+        var activeBanners = banners.Where(b => b.IsActive).ToList();
+        return activeBanners.Select(BannerMapper.ToDto).ToList();
     }
 
-    public Task ToggleActiveAsync(long id)
+    public async Task ToggleActiveAsync(long id)
     {
-        throw new NotImplementedException();
+        var entity = await _repository.GetByIdAsync(id);
+        if (entity is null)
+            throw new KeyNotFoundException($"Banner with ID {id} not found.");
+
+        entity.IsActive = !entity.IsActive;
+        await _repository.UpdateAsync(entity);
     }
 }
