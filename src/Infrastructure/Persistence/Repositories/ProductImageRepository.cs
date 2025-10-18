@@ -50,4 +50,42 @@ public class ProductImageRepository : IProductImageRepository
         _context.ProductImages.Remove(existing);
         await _context.SaveChangesAsync();
     }
+
+    public async Task<IEnumerable<ProductImage>> GetByProductIdAsync(long productId)
+    {
+        return await _context.ProductImages
+            .Where(pi => pi.ProductId == productId)
+            .AsNoTracking()
+            .ToListAsync();
+    }
+
+    public async Task<ProductImage?> GetMainImageByProductIdAsync(long productId)
+    {
+        return await _context.ProductImages
+            .AsNoTracking()
+            .FirstOrDefaultAsync(pi => pi.ProductId == productId && pi.IsMain && !pi.IsDeleted);
+    }
+
+    public async Task SetMainImageAsync(long imageId, long productId)
+    {
+        var images = await _context.ProductImages
+            .Where(pi => pi.ProductId == productId)
+            .ToListAsync();
+
+        foreach (var img in images)
+            img.IsMain = img.Id == imageId;
+
+        _context.ProductImages.UpdateRange(images);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task SoftDeleteAsync(long id)
+    {
+        var existing = await _context.ProductImages.FindAsync(id);
+        if (existing is null)
+            return;
+
+        existing.IsDeleted = true;
+        await _context.SaveChangesAsync();
+    }
 }

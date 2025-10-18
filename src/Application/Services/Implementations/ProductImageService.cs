@@ -47,4 +47,26 @@ public class ProductImageService : IProductImageService
     {
         await _repository.DeleteAsync(id);
     }
+
+    public async Task<IEnumerable<ProductImageDto>> GetByProductIdAsync(long productId)
+    {
+        var images = await _repository.GetByProductIdAsync(productId);
+        return images.Select(ProductImageMapper.ToDto).ToList();
+    }
+
+    public async Task<ProductImageDto?> GetMainImageByProductIdAsync(long productId)
+    {
+        var entity = await _repository.GetMainImageByProductIdAsync(productId);
+        return entity is null ? null : ProductImageMapper.ToDto(entity);
+    }
+
+    public async Task SetMainImageAsync(long imageId, long productId)
+    {
+        await _repository.SetMainImageAsync(imageId, productId);
+    }
+
+    public async Task SoftDeleteAsync(long id)
+    {
+        await _repository.SoftDeleteAsync(id);
+    }
 }

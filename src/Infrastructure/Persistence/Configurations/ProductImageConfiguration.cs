@@ -20,5 +20,23 @@ public class ProductImageConfiguration : IEntityTypeConfiguration<ProductImage>
             .WithMany(p => p.Images)
             .HasForeignKey(pi => pi.ProductId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Property(pi => pi.IsMain)
+            .IsRequired()
+            .HasDefaultValue(false);
+
+        builder.Property(pi => pi.CreatedAt)
+            .IsRequired()
+            .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+        builder.Property(pi => pi.UpdatedAt)
+            .IsRequired(false);
+        
+        builder.Property(pi => pi.IsDeleted)
+            .IsRequired()
+            .HasDefaultValue(false);
+
+        builder.HasIndex(pi => new { pi.ProductId, pi.IsMain });
+        builder.HasIndex(pi => pi.IsDeleted);
     }
 }

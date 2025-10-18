@@ -49,7 +49,6 @@ public class PaymentService : IPaymentService
         await _repository.DeleteAsync(id);
     }
 
-    // 🔹 Qo‘shimcha funksiyalar
 
     public async Task<IEnumerable<PaymentGetDto>> GetByUserIdAsync(long userId)
     {
