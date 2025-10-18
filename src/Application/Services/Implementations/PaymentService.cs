@@ -1,8 +1,8 @@
-﻿using Application.Common.Interfaces.Repositories;
-using Application.Dtos;
-using Application.Interfaces.Repositories;
+﻿using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
+using Application.Dtos;
 using Application.Mappers;
+using Domain.Entities;
 
 namespace Application.Services;
 
@@ -47,5 +47,56 @@ public class PaymentService : IPaymentService
     public async Task DeleteAsync(long id)
     {
         await _repository.DeleteAsync(id);
+    }
+
+    // 🔹 Qo‘shimcha funksiyalar
+
+    public async Task<IEnumerable<PaymentGetDto>> GetByUserIdAsync(long userId)
+    {
+        var entities = await _repository.GetByUserIdAsync(userId);
+        return entities.Select(PaymentMapper.ToDto);
+    }
+
+    public async Task<Payment?> GetByOrderIdAsync(long orderId)
+    {
+        return await _repository.GetByOrderIdAsync(orderId);
+    }
+
+    public async Task<IEnumerable<PaymentGetDto>> GetByStatusAsync(string status)
+    {
+        var entities = await _repository.GetByStatusAsync(status);
+        return entities.Select(PaymentMapper.ToDto);
+    }
+
+    public async Task<IEnumerable<PaymentGetDto>> GetByDateRangeAsync(DateTime startDate, DateTime endDate)
+    {
+        var entities = await _repository.GetByDateRangeAsync(startDate, endDate);
+        return entities.Select(PaymentMapper.ToDto);
+    }
+
+    public async Task<decimal> GetTotalPaidByUserAsync(long userId)
+    {
+        return await _repository.GetTotalPaidByUserAsync(userId);
+    }
+
+    public async Task<decimal> GetTotalPaidInPeriodAsync(DateTime startDate, DateTime endDate)
+    {
+        return await _repository.GetTotalPaidInPeriodAsync(startDate, endDate);
+    }
+
+    public async Task<PaymentGetDto?> GetByTransactionIdAsync(string transactionId)
+    {
+        var entity = await _repository.GetByTransactionIdAsync(transactionId);
+        return entity is null ? null : PaymentMapper.ToDto(entity);
+    }
+
+    public async Task UpdateStatusAsync(long paymentId, string newStatus)
+    {
+        await _repository.UpdateStatusAsync(paymentId, newStatus);
+    }
+
+    public async Task<bool> IsPaymentCompletedAsync(long orderId)
+    {
+        return await _repository.IsPaymentCompletedAsync(orderId);
     }
 }
