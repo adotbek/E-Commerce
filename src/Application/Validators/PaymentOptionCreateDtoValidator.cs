@@ -19,8 +19,15 @@ public class PaymentOptionCreateDtoValidator : AbstractValidator<PaymentOptionCr
             .Matches(@"^\d{13,19}$").WithMessage("Card number must be between 13 and 19 digits.");
 
         RuleFor(x => x.ExpiryDate)
-            .NotEmpty().WithMessage("Expiry date is required.")
-            .Matches(@"^(0[1-9]|1[0-2])\/\d{2}$").WithMessage("Expiry date must be in MM/YY format.");
+            .GreaterThan(0).WithMessage("Expiry date must be a valid positive number.");
+
+        RuleFor(x => x.ExpiryMonth)
+    .InclusiveBetween(1, 12)
+    .WithMessage("Expire month must be between 1 and 12.");
+
+        RuleFor(x => x.ExpiryYear)
+            .GreaterThanOrEqualTo(DateTime.UtcNow.Year)
+            .WithMessage("Expire year must not be in the past.");
 
         RuleFor(x => x.CardType)
             .NotEmpty().WithMessage("Card type is required.")

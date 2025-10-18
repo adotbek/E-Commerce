@@ -11,6 +11,6 @@ public class PaymentOptionGetDto
     public long Id { get; set; }
     public string CardHolderName { get; set; } = default!;
     public string CardNumberMasked { get; set; } = default!; 
-    public string ExpiryDate { get; set; } = default!;
+    public int ExpiryDate { get; set; } = default!;
     public string CardType { get; set; } = default!;
 }

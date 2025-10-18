@@ -53,18 +53,23 @@ public class OrderItemRepository : IOrderItemRepository
         await _context.SaveChangesAsync();
     }
 
-    public Task<IEnumerable<Order>> GetByOrderIdAsync(long orderId)
+    public async Task<IEnumerable<OrderItem>> GetByOrderIdAsync(long orderId)
     {
-        throw new NotImplementedException();
+        return await _context.OrderItems
+            .Include(oi => oi.Product)
+            .Where(oi => oi.OrderId == orderId)
+            .ToListAsync();
     }
 
-    public Task<decimal> CalculateTotalAsync(long orderId)
+    public async Task<decimal> CalculateTotalAsync(long orderId)
     {
-        throw new NotImplementedException();
+        return await _context.OrderItems
+            .Where(oi => oi.OrderId == orderId)
+            .SumAsync(oi => oi.Quantity * oi.UnitPrice);
     }
 
-    public Task<bool> ExistsAsync(long orderItemId)
+    public async Task<bool> ExistsAsync(long orderItemId)
     {
-        throw new NotImplementedException();
+        return await _context.OrderItems.AnyAsync(oi => oi.Id == orderItemId);
     }
 }

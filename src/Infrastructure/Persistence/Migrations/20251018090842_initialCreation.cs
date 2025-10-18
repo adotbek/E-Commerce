@@ -308,10 +308,17 @@ namespace Infrastructure.Persistence.Migrations
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     CardHolderName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    CardNumber = table.Column<string>(type: "nvarchar(16)", maxLength: 16, nullable: false),
-                    ExpiryDate = table.Column<string>(type: "nvarchar(7)", maxLength: 7, nullable: false),
+                    CardNumber = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    ExpiryMonth = table.Column<int>(type: "int", nullable: false),
+                    ExpiryYear = table.Column<int>(type: "int", nullable: false),
+                    ExpiryDate = table.Column<int>(type: "int", nullable: false),
                     CardType = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
-                    UserId = table.Column<long>(type: "bigint", nullable: false)
+                    IsActive = table.Column<bool>(type: "bit", nullable: false, defaultValue: true),
+                    IsDefault = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    PaymentToken = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    UserId = table.Column<long>(type: "bigint", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
                 },
                 constraints: table =>
                 {

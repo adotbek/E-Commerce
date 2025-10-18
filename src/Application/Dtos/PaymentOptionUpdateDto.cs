@@ -10,5 +10,5 @@ public class PaymentOptionUpdateDto
 {
     public long Id { get; set; }
     public string CardHolderName { get; set; } = default!;
-    public string ExpiryDate { get; set; } = default!;
+    public int ExpiryDate { get; set; } = default!;
 }

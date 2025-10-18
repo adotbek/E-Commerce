@@ -48,4 +48,54 @@ public class PaymentOptionService : IPaymentOptionService
     {
         await _repository.DeleteAsync(id);
     }
+
+    public Task<IEnumerable<PaymentOptionGetDto>> GetByUserIdAsync(long userId)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<IEnumerable<PaymentOptionGetDto>> GetActiveByUserIdAsync(long userId)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<PaymentOptionGetDto?> GetDefaultByUserIdAsync(long userId)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task SetDefaultAsync(long userId, long paymentOptionId)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<bool> BelongsToUserAsync(long paymentOptionId, long userId)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<bool> ExistsByCardNumberAsync(string cardNumber, long userId)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<bool> IsExpiredAsync(long id)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<string?> GetMaskedCardNumberAsync(long id)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task ToggleActiveAsync(long id, bool isActive)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<string> GeneratePaymentTokenAsync(long id)
+    {
+        throw new NotImplementedException();
+    }
 }
