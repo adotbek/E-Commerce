@@ -13,5 +13,11 @@ public interface IOrderRepository
     Task<IEnumerable<Order>> GetByUserIdAsync(long userId);
     Task UpdateStatusAsync(long id, string status);
     Task<IEnumerable<Order>> GetByStatusAsync(string status);
+    Task<decimal> CalculateTotalAmountAsync(long orderId);
+    Task<IEnumerable<Order>> GetRecentOrdersAsync(int count);
+    Task<bool> ExistsAsync(long orderId);
+    Task<IEnumerable<Order>> GetPendingOrdersAsync();
+    Task<IEnumerable<Order>> GetByDateRangeAsync(DateTime from, DateTime to);
+    Task<int> GetTotalOrdersCountAsync();
 
 }

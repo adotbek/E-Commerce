@@ -22,9 +22,6 @@ public class FlashSaleConfiguration : IEntityTypeConfiguration<FlashSale>
         builder.Property(x => x.EndTime)
             .IsRequired();
 
-        builder.Property(f => f.DiscountPercent)
-    .IsRequired()
-    .HasColumnType("float");
 
         builder.HasMany(f => f.Items)
                .WithOne(i => i.FlashSale)

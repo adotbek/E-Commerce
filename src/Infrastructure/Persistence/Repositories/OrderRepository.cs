@@ -85,4 +85,61 @@ public class OrderRepository : IOrderRepository
             .OrderByDescending(o => o.CreatedAt)
             .ToListAsync();
     }
+
+    public async Task<decimal> CalculateTotalAmountAsync(long orderId)
+    {
+        var order = await _context.Orders
+            .Include(o => o.Items)
+            .FirstOrDefaultAsync(o => o.Id == orderId);
+
+        if (order is null)
+            throw new KeyNotFoundException($"Order with Id={orderId} not found.");
+
+        var total = order.Items?.Sum(i => i.Quantity * i.UnitPrice) ?? 0;
+        order.TotalAmount = total;
+
+        await _context.SaveChangesAsync();
+        return total;
+    }
+
+    public async Task<IEnumerable<Order>> GetRecentOrdersAsync(int count)
+    {
+        return await _context.Orders
+            .Include(o => o.User)
+            .Include(o => o.Items)
+            .ThenInclude(i => i.Product)
+            .OrderByDescending(o => o.CreatedAt)
+            .Take(count)
+            .ToListAsync();
+    }
+
+    public async Task<bool> ExistsAsync(long orderId)
+    {
+        return await _context.Orders.AnyAsync(o => o.Id == orderId);
+    }
+
+    public async Task<IEnumerable<Order>> GetPendingOrdersAsync()
+    {
+        return await _context.Orders
+            .Include(o => o.Items)
+            .ThenInclude(i => i.Product)
+            .Where(o => o.Status == "Pending")
+            .OrderByDescending(o => o.CreatedAt)
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<Order>> GetByDateRangeAsync(DateTime from, DateTime to)
+    {
+        return await _context.Orders
+            .Include(o => o.Items)
+            .ThenInclude(i => i.Product)
+            .Where(o => o.CreatedAt >= from && o.CreatedAt <= to)
+            .OrderByDescending(o => o.CreatedAt)
+            .ToListAsync();
+    }
+
+    public async Task<int> GetTotalOrdersCountAsync()
+    {
+        return await _context.Orders.CountAsync();
+    }
 }

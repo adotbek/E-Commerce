@@ -2,7 +2,6 @@
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
 using Application.Mappers;
-using Microsoft.IdentityModel.Abstractions;
 
 namespace Application.Services;
 
@@ -35,9 +34,7 @@ public class ProductService : IProductService
         if (category is null)
             throw new KeyNotFoundException($"Category with ID {categoryId} not found.");
 
-        var entity = ProductMapper.ToEntity(dto,categoryId);
-        entity.CategoryId = categoryId;
-
+        var entity = ProductMapper.ToEntity(dto, categoryId);
         await _repository.AddAsync(entity);
         return entity.Id;
     }
@@ -52,14 +49,57 @@ public class ProductService : IProductService
         if (category is null)
             throw new KeyNotFoundException($"Category with ID {categoryId} not found.");
 
-        ProductMapper.UpdateEntity(entity, dto,categoryId);
-        entity.CategoryId = categoryId;
-
+        ProductMapper.UpdateEntity(entity, dto, categoryId);
         await _repository.UpdateAsync(entity);
     }
 
     public async Task DeleteAsync(long id)
     {
         await _repository.DeleteAsync(id);
+    }
+
+    public async Task<IEnumerable<ProductDto>> GetByCategoryIdAsync(long categoryId)
+    {
+        var products = await _repository.GetByCategoryIdAsync(categoryId);
+        return products.Select(ProductMapper.ToDto).ToList();
+    }
+
+    public async Task<IEnumerable<ProductDto>> GetFeaturedAsync()
+    {
+        var products = await _repository.GetFeaturedAsync();
+        return products.Select(ProductMapper.ToDto).ToList();
+    }
+
+    public async Task<IEnumerable<ProductDto>> GetNewArrivalsAsync()
+    {
+        var products = await _repository.GetNewArrivalsAsync();
+        return products.Select(ProductMapper.ToDto).ToList();
+    }
+
+    public async Task<IEnumerable<ProductDto>> SearchAsync(string keyword)
+    {
+        var products = await _repository.SearchAsync(keyword);
+        return products.Select(ProductMapper.ToDto).ToList();
+    }
+
+    public async Task<bool> ExistsAsync(long id)
+    {
+        return await _repository.ExistsAsync(id);
+    }
+
+    public async Task UpdateStockAsync(long id, int quantity)
+    {
+        await _repository.UpdateStockAsync(id, quantity);
+    }
+
+    public async Task<IEnumerable<ProductDto>> GetOutOfStockAsync()
+    {
+        var products = await _repository.GetOutOfStockAsync();
+        return products.Select(ProductMapper.ToDto).ToList();
+    }
+
+    public async Task<decimal?> GetDiscountPriceAsync(long productId)
+    {
+        return await _repository.GetDiscountPriceAsync(productId);
     }
 }

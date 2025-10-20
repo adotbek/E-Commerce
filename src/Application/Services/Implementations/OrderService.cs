@@ -64,4 +64,37 @@ public class OrderService : IOrderService
         var orders = await _repository.GetByStatusAsync(status);
         return orders.Select(OrderMapper.ToDto);
     }
+
+    public async Task<decimal> CalculateTotalAmountAsync(long orderId)
+    {
+        return await _repository.CalculateTotalAmountAsync(orderId);
+    }
+
+    public async Task<IEnumerable<OrderGetDto>> GetRecentOrdersAsync(int count)
+    {
+        var orders = await _repository.GetRecentOrdersAsync(count);
+        return orders.Select(OrderMapper.ToDto);
+    }
+
+    public async Task<bool> ExistsAsync(long orderId)
+    {
+        return await _repository.ExistsAsync(orderId);
+    }
+
+    public async Task<IEnumerable<OrderGetDto>> GetPendingOrdersAsync()
+    {
+        var orders = await _repository.GetPendingOrdersAsync();
+        return orders.Select(OrderMapper.ToDto);
+    }
+
+    public async Task<IEnumerable<OrderGetDto>> GetByDateRangeAsync(DateTime from, DateTime to)
+    {
+        var orders = await _repository.GetByDateRangeAsync(from, to);
+        return orders.Select(OrderMapper.ToDto);
+    }
+
+    public async Task<int> GetTotalOrdersCountAsync()
+    {
+        return await _repository.GetTotalOrdersCountAsync();
+    }
 }
