@@ -20,32 +20,5 @@ public static class CategoryEndpoints
         })
         .WithName("GetAllCategories");
 
-        group.MapGet("/{id:long}", async (long id, ICategoryService service) =>
-        {
-            var category = await service.GetByIdAsync(id);
-            return category is not null ? Results.Ok(category) : Results.NotFound();
-        })
-        .WithName("GetCategoryById");
-
-        group.MapPost("/", async ([FromBody] CategoryCreateDto dto, ICategoryService service) =>
-        {
-            var id = await service.AddCategoryAsync(dto);
-            return Results.Created($"/api/categories/{id}", id);
-        })
-        .WithName("CreateCategory");
-
-        group.MapPut("/{id:long}", async (long id, [FromBody] CategoryUpdateDto dto, ICategoryService service) =>
-        {
-            await service.UpdateAsync(id, dto);
-            return Results.NoContent();
-        })
-        .WithName("UpdateCategory");
-
-        group.MapDelete("/{id:long}", async (long id, ICategoryService service) =>
-        {
-            await service.DeleteAsync(id);
-            return Results.NoContent();
-        })
-        .WithName("DeleteCategory");
     }
 }

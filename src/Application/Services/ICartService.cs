@@ -4,6 +4,7 @@ namespace Application.Interfaces.Services;
 
 public interface ICartService
 {
+
     Task<long> AddCartAsync(CartCreateDto dto);
     Task<CartGetDto?> GetByIdAsync(long id);
     Task<CartGetDto?> GetByUserIdAsync(long userId);

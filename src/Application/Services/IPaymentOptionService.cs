@@ -4,10 +4,13 @@ namespace Application.Interfaces.Services;
 
 public interface IPaymentOptionService
 {
+    //
     Task<IEnumerable<PaymentOptionGetDto>> GetAllAsync();
     Task<PaymentOptionGetDto?> GetByIdAsync(long id);
     Task<long> AddPaymentOptionAsync(PaymentOptionCreateDto dto);
+    //D
     Task UpdateAsync(PaymentOptionUpdateDto dto, long id);
+    //D
     Task DeleteAsync(long id);  
     Task<IEnumerable<PaymentOptionGetDto>> GetByUserIdAsync(long userId);
     Task<IEnumerable<PaymentOptionGetDto>> GetActiveByUserIdAsync(long userId);

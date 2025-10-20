@@ -19,5 +19,6 @@ public class Product
 
     public Category Category { get; set; } = default!;
     public ICollection<ProductImage>? Images { get; set; }
+    public ICollection<WishlistItem> WishlistItems { get; set; }
     public ICollection<Review>? Reviews { get; set; }
 }
