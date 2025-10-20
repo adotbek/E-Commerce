@@ -49,53 +49,56 @@ public class PaymentOptionService : IPaymentOptionService
         await _repository.DeleteAsync(id);
     }
 
-    public Task<IEnumerable<PaymentOptionGetDto>> GetByUserIdAsync(long userId)
+    public async Task<IEnumerable<PaymentOptionGetDto>> GetByUserIdAsync(long userId)
     {
-        throw new NotImplementedException();
+        var entities = await _repository.GetByUserIdAsync(userId);
+        return entities.Select(PaymentOptionMapper.ToDto);
     }
 
-    public Task<IEnumerable<PaymentOptionGetDto>> GetActiveByUserIdAsync(long userId)
+    public async Task<IEnumerable<PaymentOptionGetDto>> GetActiveByUserIdAsync(long userId)
     {
-        throw new NotImplementedException();
+        var entities = await _repository.GetActiveByUserIdAsync(userId);
+        return entities.Select(PaymentOptionMapper.ToDto);
     }
 
-    public Task<PaymentOptionGetDto?> GetDefaultByUserIdAsync(long userId)
+    public async Task<PaymentOptionGetDto?> GetDefaultByUserIdAsync(long userId)
     {
-        throw new NotImplementedException();
+        var entity = await _repository.GetDefaultByUserIdAsync(userId);
+        return entity is null ? null : PaymentOptionMapper.ToDto(entity);
     }
 
-    public Task SetDefaultAsync(long userId, long paymentOptionId)
+    public async Task SetDefaultAsync(long userId, long paymentOptionId)
     {
-        throw new NotImplementedException();
+        await _repository.SetDefaultAsync(userId, paymentOptionId);
     }
 
-    public Task<bool> BelongsToUserAsync(long paymentOptionId, long userId)
+    public async Task<bool> BelongsToUserAsync(long paymentOptionId, long userId)
     {
-        throw new NotImplementedException();
+        return await _repository.BelongsToUserAsync(paymentOptionId, userId);
     }
 
-    public Task<bool> ExistsByCardNumberAsync(string cardNumber, long userId)
+    public async Task<bool> ExistsByCardNumberAsync(string cardNumber, long userId)
     {
-        throw new NotImplementedException();
+        return await _repository.ExistsByCardNumberAsync(cardNumber, userId);
     }
 
-    public Task<bool> IsExpiredAsync(long id)
+    public async Task<bool> IsExpiredAsync(long id)
     {
-        throw new NotImplementedException();
+        return await _repository.IsExpiredAsync(id);
     }
 
-    public Task<string?> GetMaskedCardNumberAsync(long id)
+    public async Task<string?> GetMaskedCardNumberAsync(long id)
     {
-        throw new NotImplementedException();
+        return await _repository.GetMaskedCardNumberAsync(id);
     }
 
-    public Task ToggleActiveAsync(long id, bool isActive)
+    public async Task ToggleActiveAsync(long id, bool isActive)
     {
-        throw new NotImplementedException();
+        await _repository.ToggleActiveAsync(id, isActive);
     }
 
-    public Task<string> GeneratePaymentTokenAsync(long id)
+    public async Task<string> GeneratePaymentTokenAsync(long id)
     {
-        throw new NotImplementedException();
+        return await _repository.GeneratePaymentTokenAsync(id);
     }
 }
