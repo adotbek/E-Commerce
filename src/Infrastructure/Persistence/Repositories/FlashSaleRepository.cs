@@ -62,4 +62,46 @@ public class FlashSaleRepository : IFlashSaleRepository
         _context.FlashSales.Remove(existing);
         await _context.SaveChangesAsync();
     }
+
+
+    public async Task<IEnumerable<FlashSale>> GetActiveAsync(DateTime? at = null)
+    {
+        var now = at ?? DateTime.UtcNow;
+        return await GetActiveAsync(now);
+    }
+
+    public async Task<int> RemoveExpiredAsync(DateTime? now = null)
+    {
+        var date = now ?? DateTime.UtcNow;
+        var expiredSales = await _context.FlashSales
+            .Where(f => f.EndTime < date)
+            .ToListAsync();
+
+        if (!expiredSales.Any())
+            return 0;
+
+        _context.FlashSales.RemoveRange(expiredSales);
+        return await _context.SaveChangesAsync();
+    }
+
+    public async Task<FlashSale?> GetActiveByProductIdAsync(long productId)
+    {
+        var now = DateTime.UtcNow;
+
+        return await _context.FlashSales
+            .Include(f => f.Items)
+            .ThenInclude(i => i.Product)
+            .Where(f => f.StartTime <= now && f.EndTime >= now)
+            .FirstOrDefaultAsync(f => f.Items.Any(i => i.ProductId == productId));
+    }
+
+    public async Task<bool> IsActiveAsync(long flashSaleId, DateTime? now = null)
+    {
+        var date = now ?? DateTime.UtcNow;
+
+        return await _context.FlashSales
+            .AnyAsync(f => f.Id == flashSaleId &&
+                           f.StartTime <= date &&
+                           f.EndTime >= date);
+    }
 }

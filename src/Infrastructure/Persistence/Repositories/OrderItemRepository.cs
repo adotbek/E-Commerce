@@ -72,4 +72,57 @@ public class OrderItemRepository : IOrderItemRepository
     {
         return await _context.OrderItems.AnyAsync(oi => oi.Id == orderItemId);
     }
+
+    public async Task<int> GetTotalQuantityAsync(long orderId)
+    {
+        return await _context.OrderItems
+            .Where(oi => oi.OrderId == orderId)
+            .SumAsync(oi => oi.Quantity);
+    }
+
+    public async Task AddOrUpdateItemAsync(long orderId, long productId, int quantity)
+    {
+        var existing = await _context.OrderItems
+            .FirstOrDefaultAsync(oi => oi.OrderId == orderId && oi.ProductId == productId);
+
+        if (existing is not null)
+        {
+            existing.Quantity += quantity;
+            _context.OrderItems.Update(existing);
+        }
+        else
+        {
+            var product = await _context.Products.FindAsync(productId);
+            if (product is null)
+                throw new KeyNotFoundException($"Product with ID {productId} not found.");
+
+            var newItem = new OrderItem
+            {
+                OrderId = orderId,
+                ProductId = productId,
+                Quantity = quantity,
+                UnitPrice = product.DiscountPrice ?? product.Price
+            };
+
+            await _context.OrderItems.AddAsync(newItem);
+        }
+
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task DeleteByOrderIdAsync(long orderId)
+    {
+        var items = await _context.OrderItems
+            .Where(oi => oi.OrderId == orderId)
+            .ToListAsync();
+
+        _context.OrderItems.RemoveRange(items);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task<bool> ExistsInOrderAsync(long orderId, long productId)
+    {
+        return await _context.OrderItems
+            .AnyAsync(oi => oi.OrderId == orderId && oi.ProductId == productId);
+    }
 }

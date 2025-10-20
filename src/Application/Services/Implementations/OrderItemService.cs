@@ -63,4 +63,24 @@ public class OrderItemService : IOrderItemService
     {
         return await _repository.ExistsAsync(orderItemId);
     }
+
+    public async Task<int> GetTotalQuantityAsync(long orderId)
+    {
+        return await _repository.GetTotalQuantityAsync(orderId);
+    }
+
+    public async Task AddOrUpdateItemAsync(long orderId, long productId, int quantity)
+    {
+        await _repository.AddOrUpdateItemAsync(orderId, productId, quantity);
+    }
+
+    public async Task DeleteByOrderIdAsync(long orderId)
+    {
+        await _repository.DeleteByOrderIdAsync(orderId);
+    }
+
+    public async Task<bool> ExistsInOrderAsync(long orderId, long productId)
+    {
+        return await _repository.ExistsInOrderAsync(orderId, productId);
+    }
 }

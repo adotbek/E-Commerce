@@ -55,4 +55,20 @@ public class FlashSaleService : IFlashSaleService
     {
         await _repository.DeleteAsync(id);
     }
+
+    public async Task<int> RemoveExpiredAsync(DateTime? now = null)
+    {
+        return await _repository.RemoveExpiredAsync(now);
+    }
+
+    public async Task<FlashSaleGetDto?> GetActiveByProductIdAsync(long productId)
+    {
+        var entity = await _repository.GetActiveByProductIdAsync(productId);
+        return entity is null ? null : FlashSaleMapper.ToDto(entity);
+    }
+
+    public async Task<bool> IsActiveAsync(long flashSaleId, DateTime? now = null)
+    {
+        return await _repository.IsActiveAsync(flashSaleId, now);
+    }
 }

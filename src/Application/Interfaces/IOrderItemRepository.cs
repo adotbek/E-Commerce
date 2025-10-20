@@ -13,4 +13,8 @@ public interface IOrderItemRepository
     Task<IEnumerable<OrderItem>> GetByOrderIdAsync(long orderId);
     Task<decimal> CalculateTotalAsync(long orderId);
     Task<bool> ExistsAsync(long orderItemId);
+    Task<int> GetTotalQuantityAsync(long orderId);
+    Task AddOrUpdateItemAsync(long orderId, long productId, int quantity);
+    Task DeleteByOrderIdAsync(long orderId);
+    Task<bool> ExistsInOrderAsync(long orderId, long productId);
 }
