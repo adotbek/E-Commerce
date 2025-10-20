@@ -299,4 +299,31 @@ public class AuthService(IRoleRepository _roleRepo, IValidator<UserCreateDto> _v
         await _userRepo.UpdateUserAsync(user);
         return true;
     }
+
+    public async Task ForgotPassword(string email, string newPassword, string confirmCode)
+    {
+        bool isValid = System.Text.RegularExpressions.Regex.IsMatch(email, @"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$");
+
+        if (!isValid)
+        {
+            throw new NotAllowedException();
+        }
+        var user = await _userRepo.GetUserByEmailAsync(email);
+        if (user == null)
+        {
+            throw new EntityNotFoundException("User not found");
+        }
+        var code = user.Confirmer!.ConfirmingCode;
+        if (code == null || code != confirmCode || user.Confirmer.ExpiredDate < DateTime.Now)
+        {
+            throw new Exception("Code is incorrect");
+        }
+
+        var taple = PasswordHasher.Hasher(newPassword);
+
+        user.Hash = taple.Hash;
+        user.Salt = taple.Salt;
+
+        await _userRepo.UpdateUserAsync(user);
+    }
 }
