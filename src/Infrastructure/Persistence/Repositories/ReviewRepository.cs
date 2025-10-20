@@ -52,4 +52,51 @@ public class ReviewRepository : IReviewRepository
         _context.Reviews.Remove(entity);
         await _context.SaveChangesAsync();
     }
+
+    public async Task<IEnumerable<Review>> GetByProductIdAsync(long productId)
+    {
+        return await _context.Reviews
+            .Include(r => r.User)
+            .Where(r => r.ProductId == productId)
+            .OrderByDescending(r => r.CreatedAt)
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<Review>> GetByUserIdAsync(long userId)
+    {
+        return await _context.Reviews
+            .Include(r => r.Product)
+            .Where(r => r.UserId == userId)
+            .OrderByDescending(r => r.CreatedAt)
+            .ToListAsync();
+    }
+
+    public async Task<double> GetAverageRatingByProductIdAsync(long productId)
+    {
+        return await _context.Reviews
+            .Where(r => r.ProductId == productId)
+            .AverageAsync(r => (double?)r.Rating) ?? 0.0;
+    }
+
+    public async Task<int> GetReviewCountByProductIdAsync(long productId)
+    {
+        return await _context.Reviews
+            .CountAsync(r => r.ProductId == productId);
+    }
+
+    public async Task<bool> ExistsAsync(long userId, long productId)
+    {
+        return await _context.Reviews
+            .AnyAsync(r => r.UserId == userId && r.ProductId == productId);
+    }
+
+    public async Task<IEnumerable<Review>> GetRecentReviewsAsync(int count = 10)
+    {
+        return await _context.Reviews
+            .Include(r => r.User)
+            .Include(r => r.Product)
+            .OrderByDescending(r => r.CreatedAt)
+            .Take(count)
+            .ToListAsync();
+    }
 }

@@ -37,7 +37,8 @@ public class WishlistItemService : IWishlistItemService
     public async Task UpdateAsync(long id, WishlistItemGetDto dto)
     {
         var existing = await _repository.GetByIdAsync(id);
-        if (existing is null) throw new EntityNotFoundException($"Wishlist item with ID {id} not found");
+        if (existing is null)
+            throw new EntityNotFoundException($"Wishlist item with ID {id} not found");
 
         WishlistItemMapper.UpdateEntity(existing, dto);
         await _repository.UpdateAsync(existing);
@@ -46,8 +47,36 @@ public class WishlistItemService : IWishlistItemService
     public async Task DeleteAsync(long id)
     {
         var existing = await _repository.GetByIdAsync(id);
-        if (existing is null) throw new EntityNotFoundException($"Wishlist with ID{id} not found");
+        if (existing is null)
+            throw new EntityNotFoundException($"Wishlist item with ID {id} not found");
 
         await _repository.DeleteAsync(existing);
+    }
+
+    public async Task<IEnumerable<WishlistItemGetDto>> GetByUserIdAsync(long userId)
+    {
+        var items = await _repository.GetByUserIdAsync(userId);
+        return items.Select(WishlistItemMapper.ToDto).ToList();
+    }
+
+    public async Task<IEnumerable<WishlistItemGetDto>> GetByWishlistIdAsync(long wishlistId)
+    {
+        var items = await _repository.GetByWishlistIdAsync(wishlistId);
+        return items.Select(WishlistItemMapper.ToDto).ToList();
+    }
+
+    public async Task<bool> ExistsAsync(long wishlistId, long productId)
+    {
+        return await _repository.ExistsAsync(wishlistId, productId);
+    }
+
+    public async Task<int> GetCountByWishlistIdAsync(long wishlistId)
+    {
+        return await _repository.GetCountByWishlistIdAsync(wishlistId);
+    }
+
+    public async Task ClearWishlistAsync(long wishlistId)
+    {
+        await _repository.ClearWishlistAsync(wishlistId);
     }
 }

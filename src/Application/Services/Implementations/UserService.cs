@@ -1,7 +1,9 @@
 ﻿using Application.Dtos;
 using Application.Interfaces;
 using Application.Mappers;
+using Core.Errors;
 using Domain.Repositories;
+using Microsoft.AspNetCore.Http;
 
 namespace Application.Services;
 
@@ -14,32 +16,28 @@ public class UserService : IUserService
         _repository = repository;
     }
 
-    public async Task<IEnumerable<UserGetDto>> GetAllAsync()
+    public async Task DeleteUserByIdAsync(long userId, string userRole)
     {
-        var users = await _repository.GetAllAsync();
-        return users.Select(UserMapper.ToGetDto).ToList();
+        if (userRole == "SuperAdmin")
+        {
+            await _repository.DeleteUserAsync(userId);
+        }
+        else if (userRole == "Admin")
+        {
+            var user = await _repository.GetUserByIdAsync(userId);
+            if (user.Role.Name == "User")
+            {
+                await _repository.DeleteUserAsync(userId);
+            }
+            else
+            {
+                throw new NotAllowedException("Admin can not delete Admin or SuperAdmin");
+            }
+        }
     }
 
-    public async Task<UserGetDto?> GetByIdAsync(long id)
+    public async Task UpdateUserRoleAsync(long userId, string userRole)
     {
-        var user = await _repository.GetByIdAsync(id);
-        return user is null ? null : UserMapper.ToGetDto(user);
-    }
-
-    public async Task<UserGetDto> CreateAsync(UserCreateDto dto)
-    {
-        var entity = UserMapper.ToEntity(dto);
-        await _repository.AddUserAsync(entity);
-        return UserMapper.ToGetDto(entity);
-    }
-   
-    public async Task<bool> DeleteAsync(long id)
-    {
-        var user = await _repository.GetByIdAsync(id);
-        if (user is null)
-            return false;
-
-        await _repository.DeleteUserAsync(user);
-        return true;
+        await _repository.UpdateUserRoleAsync(userId, userRole);
     }
 }

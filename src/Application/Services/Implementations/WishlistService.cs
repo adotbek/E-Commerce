@@ -52,4 +52,25 @@ public class WishlistService : IWishlistService
 
         await _repository.DeleteAsync(entity);
     }
+
+    public async Task<WishlistGetDto?> GetByUserIdAsync(long userId)
+    {
+        var entity = await _repository.GetByUserIdAsync(userId);
+        return entity is null ? null : WishlistMapper.ToGetDto(entity);
+    }
+
+    public async Task<bool> ExistsByUserIdAsync(long userId)
+    {
+        return await _repository.ExistsByUserIdAsync(userId);
+    }
+
+    public async Task<int> GetItemCountAsync(long wishlistId)
+    {
+        return await _repository.GetItemCountAsync(wishlistId);
+    }
+
+    public async Task ClearAsync(long wishlistId)
+    {
+        await _repository.ClearAsync(wishlistId);
+    }
 }

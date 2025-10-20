@@ -12,7 +12,7 @@ public class FlashSaleItemConfiguration : IEntityTypeConfiguration<FlashSaleItem
 
         builder.HasKey(fsi => fsi.Id);
 
-        builder.Property(fsi => fsi.DiscountedPrice)
+        builder.Property(fsi => fsi.FlashSale.DiscountedPrice)
             .IsRequired()
             .HasColumnType("decimal(18,2)");
 

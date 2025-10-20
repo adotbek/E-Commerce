@@ -14,7 +14,7 @@ public static class FlashSaleItemMapper
             ProductName = entity.Product.Name,
             ProductImage = entity.Product.ImageUrl,
             OriginalPrice = entity.Product.Price,
-            DiscountedPrice = entity.DiscountedPrice,
+            DiscountedPrice = entity.FlashSale.DiscountedPrice,
             FlashSaleId = entity.FlashSaleId
         };
 
@@ -22,14 +22,13 @@ public static class FlashSaleItemMapper
         => new()
         {
             ProductId = dto.ProductId,
-            DiscountedPrice = dto.DiscountedPrice,
             FlashSaleId = dto.FlashSaleId
         };
 
     public static void UpdateEntity(FlashSaleItem entity, FlashSaleItemGetDto dto)
     {
         entity.ProductId = dto.ProductId;
-        entity.DiscountedPrice = dto.DiscountedPrice;
+        entity.FlashSale.DiscountedPrice = dto.DiscountedPrice;
         entity.FlashSaleId = dto.FlashSaleId;
     }
 }

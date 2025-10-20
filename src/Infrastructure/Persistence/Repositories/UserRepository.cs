@@ -35,10 +35,12 @@ public class UserRepository : IUserRepository
     }
 
 
-    public async Task DeleteUserAsync(User user)
-    { 
-            _context.Users.Remove(user);
+    public async Task DeleteUserAsync(long userId)
+    {
+        var user = await GetByIdAsync(userId);
+        _context.Users.Remove(user);
         await _context.SaveChangesAsync();
+
     }
 
 

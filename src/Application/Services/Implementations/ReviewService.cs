@@ -28,6 +28,10 @@ public class ReviewService : IReviewService
 
     public async Task<long> AddReviewAsync(ReviewDto dto)
     {
+        var exists = await _repository.ExistsAsync(dto.UserId, dto.ProductId);
+        if (exists)
+            throw new InvalidOperationException("User has already reviewed this product.");
+
         var entity = dto.ToEntity();
         await _repository.AddAsync(entity);
         return entity.Id;
@@ -46,5 +50,38 @@ public class ReviewService : IReviewService
     public async Task DeleteAsync(long id)
     {
         await _repository.DeleteAsync(id);
+    }
+
+    public async Task<IEnumerable<ReviewDto>> GetByProductIdAsync(long productId)
+    {
+        var entities = await _repository.GetByProductIdAsync(productId);
+        return entities.Select(r => r.ToDto());
+    }
+
+    public async Task<IEnumerable<ReviewDto>> GetByUserIdAsync(long userId)
+    {
+        var entities = await _repository.GetByUserIdAsync(userId);
+        return entities.Select(r => r.ToDto());
+    }
+
+    public async Task<double> GetAverageRatingByProductIdAsync(long productId)
+    {
+        return await _repository.GetAverageRatingByProductIdAsync(productId);
+    }
+
+    public async Task<int> GetReviewCountByProductIdAsync(long productId)
+    {
+        return await _repository.GetReviewCountByProductIdAsync(productId);
+    }
+
+    public async Task<bool> ExistsAsync(long userId, long productId)
+    {
+        return await _repository.ExistsAsync(userId, productId);
+    }
+
+    public async Task<IEnumerable<ReviewDto>> GetRecentReviewsAsync(int count = 10)
+    {
+        var entities = await _repository.GetRecentReviewsAsync(count);
+        return entities.Select(r => r.ToDto());
     }
 }

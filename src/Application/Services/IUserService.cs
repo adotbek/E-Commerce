@@ -1,9 +1,11 @@
 ﻿using Application.Dtos;
+using Microsoft.AspNetCore.Http;
 
 namespace Application.Interfaces;
 
 public interface IUserService
 {
-    Task<UserGetDto?> GetByIdAsync(long id);
-    Task<bool> DeleteAsync(long id);
+    Task UpdateUserRoleAsync(long userId, string userRole);
+    Task DeleteUserByIdAsync(long userId, string userRole);
+
 }
