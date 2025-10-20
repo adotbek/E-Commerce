@@ -1,4 +1,6 @@
 using E_Commerce.Configurations;
+using E_Commerce.Extensions;
+using E_Commerce.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +12,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.ConfigureDataBase();
 builder.ConfigurationJwtAuth();
+
+ServiceCollectionExtensions.AddSwaggerWithJwt(builder.Services);
 
 var app = builder.Build();
 
@@ -23,6 +27,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
+
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.MapControllers();
 
