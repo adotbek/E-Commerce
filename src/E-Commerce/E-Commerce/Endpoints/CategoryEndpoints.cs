@@ -13,12 +13,18 @@ public static class CategoryEndpoints
                        .WithTags("CategoryManagement")
                        .RequireAuthorization();
 
-        group.MapGet("/", async (ICategoryService service) =>
+        group.MapGet("/", async ([FromServices] ICategoryService service) =>
         {
             var categories = await service.GetAllAsync();
             return Results.Ok(categories);
         })
         .WithName("GetAllCategories");
 
+        group.MapGet("/{id:long}", async (long id, [FromServices] ICategoryService service) =>
+        {
+            var category = await service.GetByIdAsync(id);
+            return category is not null ? Results.Ok(category) : Results.NotFound();
+        })
+        .WithName("GetCategoryById");
     }
 }

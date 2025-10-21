@@ -13,56 +13,56 @@ public static class CartEndpoints
                        .WithTags("CartManagement")
                        .RequireAuthorization();
 
-        group.MapPost("/", async ([FromBody] CartCreateDto dto, ICartService service) =>
+        group.MapPost("/", async ([FromBody] CartCreateDto dto, [FromServices] ICartService service) =>
         {
             var id = await service.AddCartAsync(dto);
             return Results.Created($"/api/carts/{id}", id);
         })
         .WithName("CreateCart");
 
-        group.MapGet("/{id:long}", async (long id, ICartService service) =>
+        group.MapGet("/{id:long}", async (long id, [FromServices] ICartService service) =>
         {
             var cart = await service.GetByIdAsync(id);
             return cart is not null ? Results.Ok(cart) : Results.NotFound();
         })
         .WithName("GetCartById");
 
-        group.MapGet("/user/{userId:long}", async (long userId, ICartService service) =>
+        group.MapGet("/user/{userId:long}", async (long userId, [FromServices] ICartService service) =>
         {
             var cart = await service.GetByUserIdAsync(userId);
             return cart is not null ? Results.Ok(cart) : Results.NotFound();
         })
         .WithName("GetCartByUserId");
 
-        group.MapPut("/user/{userId:long}", async (long userId, [FromBody] CartUpdateDto dto, ICartService service) =>
+        group.MapPut("/user/{userId:long}", async (long userId, [FromBody] CartUpdateDto dto, [FromServices] ICartService service) =>
         {
             await service.UpdateAsync(userId, dto);
             return Results.NoContent();
         })
         .WithName("UpdateCartByUserId");
 
-        group.MapDelete("/{id:long}", async (long id, ICartService service) =>
+        group.MapDelete("/{id:long}", async (long id, [FromServices] ICartService service) =>
         {
             await service.DeleteAsync(id);
             return Results.NoContent();
         })
         .WithName("DeleteCart");
 
-        group.MapGet("/user/{userId:long}/exists", async (long userId, ICartService service) =>
+        group.MapGet("/user/{userId:long}/exists", async (long userId, [FromServices] ICartService service) =>
         {
             var exists = await service.ExistsByUserIdAsync(userId);
             return Results.Ok(exists);
         })
         .WithName("CheckCartExistsByUserId");
 
-        group.MapGet("/{cartId:long}/total", async (long cartId, ICartService service) =>
+        group.MapGet("/{cartId:long}/total", async (long cartId, [FromServices] ICartService service) =>
         {
             var total = await service.CalculateTotalPriceAsync(cartId);
             return Results.Ok(total);
         })
         .WithName("CalculateCartTotalPrice");
 
-        group.MapDelete("/{cartId:long}/clear", async (long cartId, ICartService service) =>
+        group.MapDelete("/{cartId:long}/clear", async (long cartId, [FromServices] ICartService service) =>
         {
             await service.ClearCartAsync(cartId);
             return Results.NoContent();

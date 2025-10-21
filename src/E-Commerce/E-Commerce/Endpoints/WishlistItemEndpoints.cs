@@ -7,73 +7,80 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Endpoints;
 
-public static class WishlistEndpoints
+public static class WishlistItemEndpoints
 {
-    public static void MapWishlistEndpoints(this WebApplication app)
+    public static void MapWishlistItemEndpoints(this WebApplication app)
     {
-        var group = app.MapGroup("/api/wishlists")
+        var group = app.MapGroup("/api/wishlist-items")
                        .WithTags("WishlistManagement")
                        .RequireAuthorization();
 
-        group.MapGet("/", async (IWishlistService service) =>
+        group.MapGet("/", async (IWishlistItemService service) =>
         {
-            var wishlists = await service.GetAllAsync();
-            return Results.Ok(wishlists);
+            var items = await service.GetAllAsync();
+            return Results.Ok(items);
         })
-        .WithName("GetAllWishlists");
+        .WithName("GetAllWishlistItems");
 
-        group.MapGet("/{id:long}", async (long id, IWishlistService service) =>
+        group.MapGet("/{id:long}", async (long id, IWishlistItemService service) =>
         {
-            var wishlist = await service.GetByIdAsync(id);
-            return wishlist is not null ? Results.Ok(wishlist) : Results.NotFound();
+            var item = await service.GetByIdAsync(id);
+            return item is not null ? Results.Ok(item) : Results.NotFound();
         })
-        .WithName("GetWishlistById");
+        .WithName("GetWishlistItemById");
 
-        group.MapPost("/", async ([FromBody] WishlistCreateDto dto, IWishlistService service) =>
+        group.MapPost("/", async ([FromBody] WishlistItemGetDto dto, IWishlistItemService service) =>
         {
-            var id = await service.AddWishlistAsync(dto);
-            return Results.Created($"/api/wishlists/{id}", id);
+            var id = await service.AddWishlistItemAsync(dto);
+            return Results.Created($"/api/wishlist-items/{id}", id);
         })
-        .WithName("CreateWishlist");
+        .WithName("CreateWishlistItem");
 
-        group.MapPut("/{id:long}", async (long id, [FromBody] WishlistCreateDto dto, IWishlistService service) =>
+        group.MapPut("/{id:long}", async (long id, [FromBody] WishlistItemGetDto dto, IWishlistItemService service) =>
         {
-            await service.UpdateAsync(dto, id);
+            await service.UpdateAsync(id, dto);
             return Results.NoContent();
         })
-        .WithName("UpdateWishlist");
+        .WithName("UpdateWishlistItem");
 
-        group.MapDelete("/{id:long}", async (long id, IWishlistService service) =>
+        group.MapDelete("/{id:long}", async (long id, IWishlistItemService service) =>
         {
             await service.DeleteAsync(id);
             return Results.NoContent();
         })
-        .WithName("DeleteWishlist");
+        .WithName("DeleteWishlistItem");
 
-        group.MapGet("/user/{userId:long}", async (long userId, IWishlistService service) =>
+        group.MapGet("/user/{userId:long}", async (long userId, IWishlistItemService service) =>
         {
-            var wishlist = await service.GetByUserIdAsync(userId);
-            return wishlist is not null ? Results.Ok(wishlist) : Results.NotFound();
+            var items = await service.GetByUserIdAsync(userId);
+            return Results.Ok(items);
         })
-        .WithName("GetWishlistByUserId");
+        .WithName("GetWishlistItemsByUserId");
 
-        group.MapGet("/exists/user/{userId:long}", async (long userId, IWishlistService service) =>
+        group.MapGet("/wishlist/{wishlistId:long}", async (long wishlistId, IWishlistItemService service) =>
         {
-            var exists = await service.ExistsByUserIdAsync(userId);
+            var items = await service.GetByWishlistIdAsync(wishlistId);
+            return Results.Ok(items);
+        })
+        .WithName("GetWishlistItemsByWishlistId");
+
+        group.MapGet("/exists", async ([FromQuery] long wishlistId, [FromQuery] long productId, IWishlistItemService service) =>
+        {
+            var exists = await service.ExistsAsync(wishlistId, productId);
             return Results.Ok(exists);
         })
-        .WithName("CheckWishlistExistsByUserId");
+        .WithName("CheckWishlistItemExists");
 
-        group.MapGet("/{wishlistId:long}/item-count", async (long wishlistId, IWishlistService service) =>
+        group.MapGet("/count/{wishlistId:long}", async (long wishlistId, IWishlistItemService service) =>
         {
-            var count = await service.GetItemCountAsync(wishlistId);
+            var count = await service.GetCountByWishlistIdAsync(wishlistId);
             return Results.Ok(count);
         })
         .WithName("GetWishlistItemCount");
 
-        group.MapDelete("/{wishlistId:long}/clear", async (long wishlistId, IWishlistService service) =>
+        group.MapDelete("/clear/{wishlistId:long}", async (long wishlistId, IWishlistItemService service) =>
         {
-            await service.ClearAsync(wishlistId);
+            await service.ClearWishlistAsync(wishlistId);
             return Results.NoContent();
         })
         .WithName("ClearWishlist");

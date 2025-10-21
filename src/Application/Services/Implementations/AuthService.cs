@@ -259,7 +259,7 @@ public class AuthService(IRoleRepository _roleRepo, IValidator<UserCreateDto> _v
 
     public async Task LogOut(string token) => await _refTokRepo.DeleteRefreshToken(token);
 
-    public async Task EailCodeSender(string email)
+    public async Task EmailCodeSender(string email)
     {
         var user = await _userRepo.GetUserByEmailAsync(email);
 

@@ -1,12 +1,12 @@
 ﻿using Application.Dtos;
-using Application.Interfaces;
+using Application.Interfaces.Services;
 using Application.Services;
+using Microsoft.AspNetCore.Mvc;
 
-namespace E_Commerce.Endpoints;
+namespace Api.Endpoints;
 
 public static class AuthEndpoints
 {
-
     public record SendCodeRequest(string Email);
 
     public static void MapAuthEndpoints(this WebApplication app)
@@ -15,20 +15,19 @@ public static class AuthEndpoints
             .AllowAnonymous()
             .WithTags("AuthenticationManagement");
 
-
         userGroup.MapPost("/send-code",
-        async (SendCodeRequest request, IAuthService _service) =>
+        async ([FromBody] SendCodeRequest request, [FromServices] IAuthService _service) =>
         {
             if (string.IsNullOrEmpty(request.Email))
                 return Results.BadRequest("Email is required");
 
-            await _service.EailCodeSender(request.Email);
+            await _service.EmailCodeSender(request.Email);
             return Results.Ok(new { success = true, data = "Confirmation code sent" });
         })
         .WithName("SendCode");
 
         userGroup.MapPost("/confirm-code",
-        async (ConfirmCodeRequestDto request, IAuthService _service) =>
+        async ([FromBody] ConfirmCodeRequestDto request, [FromServices] IAuthService _service) =>
         {
             var res = await _service.ConfirmCode(request.Code, request.Email);
             return Results.Ok(res);
@@ -36,15 +35,14 @@ public static class AuthEndpoints
         .WithName("ConfirmCode");
 
         userGroup.MapPost("/register",
-        async (UserCreateDto user, IAuthService _service) =>
+        async ([FromBody] UserCreateDto user, [FromServices] IAuthService _service) =>
         {
             return Results.Ok(await _service.SignUpUserAsync(user));
         })
-        .AllowAnonymous()
         .WithName("SignUp");
 
         userGroup.MapPost("/login",
-        async (UserLoginDto user, IAuthService _service) =>
+        async ([FromBody] UserLoginDto user, [FromServices] IAuthService _service) =>
         {
             var result = await _service.LoginUserAsync(user);
             return Results.Ok(result);
@@ -52,7 +50,7 @@ public static class AuthEndpoints
         .WithName("Login");
 
         userGroup.MapPost("/google-register",
-        async (GoogleAuthDto dto, IAuthService _service) =>
+        async ([FromBody] GoogleAuthDto dto, [FromServices] IAuthService _service) =>
         {
             var userId = await _service.GoogleRegisterAsync(dto);
             return Results.Ok(new { UserId = userId });
@@ -60,7 +58,7 @@ public static class AuthEndpoints
         .WithName("GoogleRegister");
 
         userGroup.MapPost("/google-login",
-        async (GoogleAuthDto dto, IAuthService _service) =>
+        async ([FromBody] GoogleAuthDto dto, [FromServices] IAuthService _service) =>
         {
             var response = await _service.GoogleLoginAsync(dto);
             return Results.Ok(response);
@@ -68,14 +66,14 @@ public static class AuthEndpoints
         .WithName("GoogleLogin");
 
         userGroup.MapPut("/refresh-token",
-        async (RefreshRequestDto refresh, IAuthService _service) =>
+        async ([FromBody] RefreshRequestDto refresh, [FromServices] IAuthService _service) =>
         {
             return Results.Ok(await _service.RefreshTokenAsync(refresh));
         })
         .WithName("RefreshToken");
 
         userGroup.MapDelete("/log-out",
-        async (string refreshToken, IAuthService _service) =>
+        async ([FromQuery] string refreshToken, [FromServices] IAuthService _service) =>
         {
             await _service.LogOut(refreshToken);
             return Results.Ok();
@@ -83,11 +81,11 @@ public static class AuthEndpoints
         .WithName("LogOut");
 
         userGroup.MapPost("/forgot-password",
-        async (string email, string newPassword, string confirmCode, IAuthService _service) =>
+        async ([FromQuery] string email, [FromQuery] string newPassword, [FromQuery] string confirmCode, [FromServices] IAuthService _service) =>
         {
             await _service.ForgotPassword(email, newPassword, confirmCode);
+            return Results.Ok();
         })
         .WithName("ForgotPassword");
-
     }
 }

@@ -1,4 +1,6 @@
+using Api.Endpoints;
 using E_Commerce.Configurations;
+using E_Commerce.Endpoints;
 using E_Commerce.Extensions;
 using E_Commerce.Middlewares;
 
@@ -29,7 +31,18 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
-
+app.MapAuthEndpoints();
+app.MapAddressEndpoints();
+app.MapCartEndpoints();
+app.MapCategoryEndpoints();
+app.MapCouponEndpoints();
+app.MapOrderEndpoints();
+app.MapPaymentEndpoints();
+app.MapPaymentOptionEndpoints();
+app.MapProductEndpoints();
+app.MapProductImageEndpoints();
+app.MapReviewEndpoints();
+app.MapWishlistEndpoints();
 
 app.MapControllers();
 
