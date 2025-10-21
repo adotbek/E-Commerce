@@ -14,6 +14,7 @@ public static class DependecyInjectionsConfiguration
 {
     public static void ConfigureDependecies (this IServiceCollection services)
     {
+        services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IAddressService, AddressService>();
         services.AddScoped<IBannerService, BannerService>();
         services.AddScoped<ICartItemService, CartItemService>();
@@ -36,6 +37,7 @@ public static class DependecyInjectionsConfiguration
         services.AddScoped<IAddressRepository, AddressRepository>();
         services.AddScoped<IBannerRepository, BannerRepository>();
         services.AddScoped<ICartItemRepository, CartItemRepository>();
+        services.AddScoped<ICategoryRepository, CategoryRepository>();
         services.AddScoped<ICartRepository, CartRepository>();
         services.AddScoped<ICouponRepository, CouponRepository>();
         services.AddScoped<IFlashSaleItemRepository, FlashSaleItemRepository>();

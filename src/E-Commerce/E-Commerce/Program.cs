@@ -14,6 +14,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.ConfigureDataBase();
 builder.ConfigurationJwtAuth();
+builder.Services.ConfigureDependecies();
 
 ServiceCollectionExtensions.AddSwaggerWithJwt(builder.Services);
 
