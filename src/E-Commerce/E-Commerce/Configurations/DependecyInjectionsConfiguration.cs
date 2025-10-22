@@ -1,12 +1,19 @@
 ﻿using Application.Common.Interfaces.Repositories;
+using Application.Dtos;
+using Application.DTOs.FlashSaleItems;
+using Application.Helpers;
 using Application.Interfaces;
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
 using Application.Services;
 using Application.Services.Implementations;
+using Application.Settings;
+using Application.Validators;
 using Domain.Repositories;
+using FluentValidation;
 using Infrastructure.Persistence.Repositories;
 using Infrastructure.Repositories;
+using Microsoft.Extensions.Options;
 
 namespace E_Commerce.Configurations;
 
@@ -54,6 +61,24 @@ public static class DependecyInjectionsConfiguration
         services.AddScoped<IWishlistItemRepository, WishlistItemRepository>();
         services.AddScoped<IWishlistRepository, WishlistRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+
+        services.AddScoped<IValidator<AddressCreateDto>, AddressCreateDtoValidator>();
+        services.AddScoped<IValidator<CartItemCreateDto>, CartItemCreateDtoValidator>();
+        services.AddScoped<IValidator<ConfirmCodeRequestDto>, ConfirmCodeRequestDtoValidator>();
+        services.AddScoped<IValidator<CouponCreateDto>, CouponCreateDtoValidator>();
+        services.AddScoped<IValidator<FlashSaleCreateDto>, FlashSaleCreateDtoValidator>();
+        services.AddScoped<IValidator<FlashSaleItemCreateDto>, FlashSaleItemCreateDtoValidator>();
+        services.AddScoped<IValidator<OrderCreateDto>, OrderCreateDtoValidator>();
+        services.AddScoped<IValidator<OrderItemCreateDto>, OrderItemCreateDtoValidator>();
+        services.AddScoped<IValidator<PaymentCreateDto>, PaymentCreateDtoValidator>();
+        services.AddScoped<IValidator<PaymentOptionCreateDto>, PaymentOptionCreateDtoValidator>();
+        services.AddScoped<IValidator<UserCreateDto>, UserCreateDtoValidator>();
+        services.AddScoped<IValidator<UserLoginDto>, UserLoginDtoValidator>();
+
+
+        services.AddScoped<ITokenService, TokenService>();
+
+
 
     }
 }

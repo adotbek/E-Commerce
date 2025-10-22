@@ -1,6 +1,5 @@
 using Api.Endpoints;
 using E_Commerce.Configurations;
-using E_Commerce.Endpoints;
 using E_Commerce.Extensions;
 using E_Commerce.Middlewares;
 
@@ -15,6 +14,10 @@ builder.Services.AddSwaggerGen();
 builder.ConfigureDataBase();
 builder.ConfigurationJwtAuth();
 builder.Services.ConfigureDependecies();
+builder.ConfigureJwtSettings();
+
+
+
 
 ServiceCollectionExtensions.AddSwaggerWithJwt(builder.Services);
 

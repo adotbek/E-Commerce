@@ -12,9 +12,10 @@ public class FlashSaleItemConfiguration : IEntityTypeConfiguration<FlashSaleItem
 
         builder.HasKey(fsi => fsi.Id);
 
-        builder.Property(fsi => fsi.FlashSale.DiscountedPrice)
-            .IsRequired()
-            .HasColumnType("decimal(18,2)");
+        builder.HasOne(fsi => fsi.FlashSale)
+               .WithMany(fs => fs.Items)
+               .HasForeignKey(fsi => fsi.FlashSaleId);
+
 
         builder.HasOne(fsi => fsi.Product)
             .WithMany()
