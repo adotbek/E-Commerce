@@ -15,6 +15,7 @@ public static class AuthEndpoints
             .AllowAnonymous()
             .WithTags("AuthenticationManagement");
 
+
         userGroup.MapPost("/send-code",
         async ([FromBody] SendCodeRequest request, [FromServices] IAuthService _service) =>
         {

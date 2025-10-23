@@ -118,10 +118,14 @@ public class AuthService(IRoleRepository _roleRepo, IValidator<UserCreateDto> _v
             var user = new User()
             {
                 Confirmer = confirmer,
+                FirstName = userCreateDto.FirstName,
+                LastName = userCreateDto.LastName,
                 UserName = userCreateDto.UserName,
                 Hash = tupleFromHasher.Hash,
                 Salt = tupleFromHasher.Salt,
-                RoleId = await _roleRepo.GetRoleIdAsync("User")
+                RoleId = await _roleRepo.GetRoleIdAsync("User"),
+                Email = userCreateDto.Email,
+                TelegramId = 7
             };
 
             long userId = await _userRepo.AddUserAsync(user);
