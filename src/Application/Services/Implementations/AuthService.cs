@@ -173,15 +173,17 @@ public class AuthService(IRoleRepository _roleRepo, IValidator<UserCreateDto> _v
         {
             throw new UnauthorizedException("UserName or password incorrect");
         }
-        if (user.Confirmer.IsConfirmed == false)
-        {
-            throw new UnauthorizedException("Email not confirmed");
-        }
+        //if (user.Confirmer.IsConfirmed == false)
+        //{
+        //    throw new UnauthorizedException("Email not confirmed");
+        //}
 
         var userGetDto = new UserGetDto()
         {
             UserId = user.UserId,
             UserName = user.UserName,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
             Email = user.Confirmer.Email,
             RoleName = user.Role.Name,
         };
@@ -203,7 +205,7 @@ public class AuthService(IRoleRepository _roleRepo, IValidator<UserCreateDto> _v
         {
             AccessToken = token,
             RefreshToken = refreshToken,
-            User = new UserGetDto { Email = user.Confirmer.Email, ProfileImgUrl = user.ProfileImgUrl, RoleName = user.Role.Name, UserId = user.UserId, UserName = user.UserName },
+            User = new UserGetDto { Email = user.Confirmer.Email, ProfileImgUrl = user.ProfileImgUrl, RoleName = user.Role.Name, UserId = user.UserId, UserName = user.UserName, FirstName = user.FirstName, LastName = user.LastName, },
             TokenType = "Bearer",
             Expires = 24
         };

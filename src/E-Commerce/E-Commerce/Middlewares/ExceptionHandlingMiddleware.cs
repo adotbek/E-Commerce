@@ -30,31 +30,36 @@ public class ExceptionHandlingMiddleware
     private Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
         var code = 500;
-        context.Response.ContentType = "application/json";
+        var message = "Serverda xatolik yuz berdi. Iltimos, keyinroq urinib ko‘ring.";
 
         if (exception is EntityNotFoundException)
         {
             code = 404;
+            message = "Resurs topilmadi.";
         }
         else if (exception is AuthException || exception is UnauthorizedException)
         {
             code = 401;
+            message = "Foydalanuvchi tizimga kirmagan yoki email tasdiqlanmagan.";
         }
         else if (exception is ForbiddenException || exception is NotAllowedException)
         {
             code = 403;
+            message = "Sizga bu amalni bajarishga ruxsat berilmagan.";
         }
 
         context.Response.StatusCode = code;
+        context.Response.ContentType = "application/json";
 
         var response = new
         {
-            StatusCode = context.Response.StatusCode,
-            Message = "Serverda xatolik yuz berdi. Iltimos, keyinroq urinib ko‘ring.",
+            StatusCode = code,
+            Message = message,
             Detail = exception.Message
         };
 
         var json = JsonSerializer.Serialize(response);
         return context.Response.WriteAsync(json);
     }
+
 }
