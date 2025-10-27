@@ -45,7 +45,6 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .HasForeignKey<PaymentOption>(p => p.UserId)
             .OnDelete(DeleteBehavior.Restrict);
 
-
         builder.HasOne(u => u.Confirmer)
             .WithOne(c => c.User)
             .HasForeignKey<User>(u => u.ConfirmerId)

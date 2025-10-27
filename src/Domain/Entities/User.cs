@@ -13,7 +13,7 @@ public class User
     public string? GoogleId { get; set; }
     public string? ProfileImgUrl { get; set; }
     public string Email { get; set; }
-    public long TelegramId { get; set; }
+    public long? TelegramId { get; set; }
 
     public long RoleId { get; set; }
     public Role Role { get; set; }
