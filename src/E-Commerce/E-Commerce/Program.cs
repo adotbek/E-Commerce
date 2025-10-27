@@ -1,5 +1,6 @@
 using Api.Endpoints;
 using E_Commerce.Configurations;
+using E_Commerce.Endpoints;
 using E_Commerce.Extensions;
 using E_Commerce.Middlewares;
 
@@ -36,6 +37,7 @@ app.UseAuthorization();
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.MapAuthEndpoints();
+app.MapAdminEndpoints();
 app.MapAddressEndpoints();
 app.MapCartEndpoints();
 app.MapCategoryEndpoints();

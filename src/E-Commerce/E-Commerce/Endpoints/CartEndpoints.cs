@@ -13,9 +13,10 @@ public static class CartEndpoints
                        .WithTags("CartManagement")
                        .RequireAuthorization();
 
-        group.MapPost("/", async ([FromBody] CartCreateDto dto, [FromServices] ICartService service) =>
+        group.MapPost("/", async ([FromServices] ICartService service,HttpContext context) =>
         {
-            var id = await service.AddCartAsync(dto);
+            var userId = context.User.FindFirst("UserId")?.Value ?? throw new Exception();
+            var id = await service.AddCartAsync(new CartCreateDto() { UserId = long.Parse(userId) });
             return Results.Created($"/api/carts/{id}", id);
         })
         .WithName("CreateCart");
@@ -27,16 +28,18 @@ public static class CartEndpoints
         })
         .WithName("GetCartById");
 
-        group.MapGet("/user/{userId:long}", async (long userId, [FromServices] ICartService service) =>
+        group.MapGet("/user/{userId:long}", async ([FromServices] ICartService service,HttpContext context) =>
         {
-            var cart = await service.GetByUserIdAsync(userId);
+            var userId = context.User.FindFirst("UserId")?.Value ?? throw new Exception();
+            var cart = await service.GetByUserIdAsync(long.Parse(userId));
             return cart is not null ? Results.Ok(cart) : Results.NotFound();
         })
         .WithName("GetCartByUserId");
 
-        group.MapPut("/user/{userId:long}", async (long userId, [FromBody] CartUpdateDto dto, [FromServices] ICartService service) =>
+        group.MapPut("/user/{userId:long}", async ([FromBody] CartUpdateDto dto, [FromServices] ICartService service,HttpContext context) =>
         {
-            await service.UpdateAsync(userId, dto);
+            var userId = context.User.FindFirst("UserId")?.Value ?? throw new Exception();
+            await service.UpdateAsync(long.Parse(userId), dto);
             return Results.NoContent();
         })
         .WithName("UpdateCartByUserId");
@@ -48,9 +51,10 @@ public static class CartEndpoints
         })
         .WithName("DeleteCart");
 
-        group.MapGet("/user/{userId:long}/exists", async (long userId, [FromServices] ICartService service) =>
+        group.MapGet("/user/{userId:long}/exists", async ( [FromServices] ICartService service,HttpContext context) =>
         {
-            var exists = await service.ExistsByUserIdAsync(userId);
+            var userId = context.User.FindFirst("UserId")?.Value ?? throw new Exception();
+            var exists = await service.ExistsByUserIdAsync(long.Parse(userId));
             return Results.Ok(exists);
         })
         .WithName("CheckCartExistsByUserId");

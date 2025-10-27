@@ -11,7 +11,7 @@ public static class CartMapper
         {
             Id = entity.Id,
             UserId = entity.UserId,
-            TotalPrice = entity.TotalPrice
+            TotalPrice = entity.TotalPrice,
         };
     }
 
@@ -20,7 +20,8 @@ public static class CartMapper
         return new Cart
         {
             UserId = dto.UserId,
-            TotalPrice = 0
+            TotalPrice = 0,
+            IsActive = true,
         };
     }
 

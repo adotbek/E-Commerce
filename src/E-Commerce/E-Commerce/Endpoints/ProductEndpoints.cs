@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Application.Interfaces.Services;
 using Application.DTOs;
+using Application.Dtos;
 
 namespace Api.Endpoints;
 
@@ -27,7 +28,7 @@ public static class ProductEndpoints
         })
         .WithName("GetProductById");
 
-        group.MapPost("/", async ([FromBody] ProductDto dto, [FromQuery] long categoryId, [FromServices] IProductService service) =>
+        group.MapPost("/", async ([FromBody] ProductCreateDto dto, [FromQuery] long categoryId, [FromServices] IProductService service) =>
         {
             var id = await service.AddProductAsync(dto, categoryId);
             return Results.Created($"/api/products/{id}", id);

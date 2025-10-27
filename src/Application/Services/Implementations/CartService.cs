@@ -17,6 +17,7 @@ public class CartService : ICartService
     public async Task<long> AddCartAsync(CartCreateDto dto)
     {
         var entity = CartMapper.ToEntity(dto);
+
         await _repository.AddAsync(entity);
         return entity.Id;
     }

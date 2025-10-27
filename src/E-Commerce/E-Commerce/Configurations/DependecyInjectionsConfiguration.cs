@@ -40,7 +40,13 @@ public static class DependecyInjectionsConfiguration
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IWishlistItemService, WishlistItemService>();
         services.AddScoped<IWishlistService, WishlistService>();
-        
+
+
+        services.AddScoped<ICategoryService, CategoryService>();
+
+
+
+
         services.AddScoped<IAddressRepository, AddressRepository>();
         services.AddScoped<IBannerRepository, BannerRepository>();
         services.AddScoped<ICartItemRepository, CartItemRepository>();

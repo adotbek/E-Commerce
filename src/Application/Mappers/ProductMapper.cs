@@ -1,4 +1,5 @@
-﻿using Application.DTOs;
+﻿using Application.Dtos;
+using Application.DTOs;
 using Domain.Entities;
 
 namespace Application.Mappers;
@@ -9,7 +10,7 @@ public static class ProductMapper
     {
         return new ProductDto
         {
-            Id = entity.Id,
+            Id=entity.Id,
             Name = entity.Name,
             Description = entity.Description,
             Price = entity.Price,
@@ -24,11 +25,10 @@ public static class ProductMapper
         };
     }
 
-    public static Product ToEntity(this ProductDto dto, long categoryId)
+    public static Product ToEntity(this ProductCreateDto dto, long categoryId)
     {
         return new Product
         {
-            Id = dto.Id,
             CategoryId = categoryId,
             Name = dto.Name,
             Description = dto.Description,

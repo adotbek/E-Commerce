@@ -16,8 +16,14 @@ public class CartRepository : ICartRepository
 
     public async Task<long> AddAsync(Cart entity)
     {
+        var carts = _context.Carts.Where(x=>x.UserId == entity.UserId);
+
+        _context.Carts.RemoveRange(carts);
+
         await _context.Carts.AddAsync(entity);
+
         await _context.SaveChangesAsync();
+
         return entity.Id;
     }
 

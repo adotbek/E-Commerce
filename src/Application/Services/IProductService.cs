@@ -1,4 +1,5 @@
-﻿using Application.DTOs;
+﻿using Application.Dtos;
+using Application.DTOs;
 
 namespace Application.Interfaces.Services;
 
@@ -6,7 +7,7 @@ public interface IProductService
 {
     Task<IEnumerable<ProductDto>> GetAllAsync();
     Task<ProductDto?> GetByIdAsync(long id);
-    Task<long> AddProductAsync(ProductDto dto, long categoryId);
+    Task<long> AddProductAsync(ProductCreateDto dto, long categoryId);
     Task UpdateAsync(ProductDto dto, long categoryId, long id);
     Task DeleteAsync(long id);
     Task<IEnumerable<ProductDto>> GetByCategoryIdAsync(long categoryId);

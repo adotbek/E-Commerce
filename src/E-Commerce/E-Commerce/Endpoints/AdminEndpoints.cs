@@ -14,8 +14,9 @@ public static class AdminEndpoints
     {
         var group = app.MapGroup("/api/admins")
             .WithTags("AdminManagement")
-            .RequireAuthorization(new AuthorizeAttribute { Roles = "Admin,SuperAdmin" });
+            .RequireAuthorization(new AuthorizeAttribute { Roles = "Admin,SuperAdmin,User" });
 
+        // ----------- Categories -----------
         group.MapPost("/categories", async ([FromBody] CategoryCreateDto dto, ICategoryService service) =>
         {
             var id = await service.AddCategoryAsync(dto);
@@ -37,6 +38,7 @@ public static class AdminEndpoints
         })
         .WithName("DeleteCategory");
 
+        // ----------- Coupons -----------
         group.MapPost("/coupons", async ([FromBody] CouponCreateDto dto, ICouponService service) =>
         {
             var id = await service.AddCouponAsync(dto);
@@ -79,6 +81,7 @@ public static class AdminEndpoints
         })
         .WithName("GetCouponById");
 
+        // ----------- Orders -----------
         group.MapGet("/orders", async (IOrderService service) =>
         {
             var orders = await service.GetAllAsync();
@@ -86,6 +89,7 @@ public static class AdminEndpoints
         })
         .WithName("GetAllOrders");
 
+        // ----------- Payment Options -----------
         group.MapGet("/payment-options", async (IPaymentOptionService service) =>
         {
             var options = await service.GetAllAsync();
@@ -93,6 +97,7 @@ public static class AdminEndpoints
         })
         .WithName("GetAllPaymentOptions");
 
+        // ----------- Product Images -----------
         group.MapPost("/product-images", async ([FromBody] ProductImageDto dto, IProductImageService service) =>
         {
             var id = await service.AddProductImageAsync(dto);
@@ -128,6 +133,7 @@ public static class AdminEndpoints
         })
         .WithName("SoftDeleteProductImage");
 
+        // ----------- Reviews -----------
         group.MapGet("/reviews", async (IReviewService service) =>
         {
             var reviews = await service.GetAllAsync();
@@ -142,6 +148,7 @@ public static class AdminEndpoints
         })
         .WithName("GetRecentReviews");
 
+        // ----------- Users -----------
         group.MapDelete("/users/{id:long}", async (HttpContext http, long id, IUserService userService) =>
         {
             var userRole = http.User.FindFirst(ClaimTypes.Role)?.Value;

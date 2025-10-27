@@ -26,9 +26,6 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
         builder.Property(p => p.Brand)
             .HasMaxLength(100);
 
-        builder.Property(p => p.ImageUrl)
-            .HasMaxLength(500);
-
         builder.HasOne(p => p.Category)
             .WithMany(c => c.Products)
             .HasForeignKey(p => p.CategoryId)

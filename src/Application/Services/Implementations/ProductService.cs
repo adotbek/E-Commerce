@@ -1,4 +1,5 @@
-﻿using Application.DTOs;
+﻿using Application.Dtos;
+using Application.DTOs;
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
 using Application.Mappers;
@@ -28,7 +29,7 @@ public class ProductService : IProductService
         return entity is null ? null : ProductMapper.ToDto(entity);
     }
 
-    public async Task<long> AddProductAsync(ProductDto dto, long categoryId)
+    public async Task<long> AddProductAsync(ProductCreateDto dto, long categoryId)
     {
         var category = await _categoryRepository.GetByIdAsync(categoryId);
         if (category is null)
