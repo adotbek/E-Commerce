@@ -1,18 +1,24 @@
-﻿using Application.Interfaces.Repositories;
+﻿using Application.Dtos;
+using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
-using Application.Dtos;
 using Application.Mappers;
+using Core.Errors;
 using Domain.Entities;
+using Domain.Enums;
+using Domain.Repositories;
 
 namespace Application.Services;
 
 public class PaymentService : IPaymentService
 {
     private readonly IPaymentRepository _repository;
+    private readonly IUserRepository _userRepo;
 
-    public PaymentService(IPaymentRepository repository)
+
+    public PaymentService(IPaymentRepository repository, IUserRepository userRepo)
     {
         _repository = repository;
+        _userRepo = userRepo;
     }
 
     public async Task<IEnumerable<PaymentGetDto>> GetAllAsync()
@@ -98,4 +104,18 @@ public class PaymentService : IPaymentService
     {
         return await _repository.IsPaymentCompletedAsync(orderId);
     }
+    public async Task<PaymentGetDto> ProcessTelegramPaymentAsync(long telegramId, PaymentCreateDto dto)
+    {
+        var payment = dto.ToEntity();
+
+
+        var newPaymentId = await _repository.AddAsync(payment);
+
+        payment.Status = "Completed";
+
+        await _repository.UpdateAsync(payment);
+
+        return payment.ToDto();
+    }
+
 }

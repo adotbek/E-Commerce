@@ -19,4 +19,6 @@ public interface IPaymentService
     Task UpdateStatusAsync(long paymentId, string newStatus);
     Task<bool> IsPaymentCompletedAsync(long orderId);
     Task DeleteAsync(long id);
+    Task<PaymentGetDto> ProcessTelegramPaymentAsync(long telegramId, PaymentCreateDto dto);
+
 }
