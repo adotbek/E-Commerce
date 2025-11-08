@@ -10,4 +10,6 @@ public class CartItem
 
     public Cart Cart { get; set; } = default!;
     public Product Product { get; set; } = default!;
+    public ProductVariant ProductVariant { get; set; } = null!;
+
 }

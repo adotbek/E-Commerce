@@ -1,4 +1,6 @@
-﻿namespace Domain.Entities;
+﻿using Domain.Enums;
+
+namespace Domain.Entities;
 
 public class Order
 {
@@ -7,7 +9,7 @@ public class Order
     public decimal TotalAmount { get; set; }
     public string ShippingAddress { get; set; } = default!;
     public string PaymentMethod { get; set; } = default!;
-    public string Status { get; set; } = "Pending";
+    public OrderStatus Status { get; set; } = OrderStatus.Pending;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public User User { get; set; } = default!;

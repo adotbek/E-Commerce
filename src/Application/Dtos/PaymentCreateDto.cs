@@ -13,4 +13,6 @@ public class PaymentCreateDto
     public PaymentMethod Method { get; set; } = default!;
     public string TransactionId { get; set; } = default!;
     public long? PaymentOptionId { get; set; }
+    public decimal? Discount { get; set; } = null;
+
 }

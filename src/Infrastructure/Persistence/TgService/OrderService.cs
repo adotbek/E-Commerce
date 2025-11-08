@@ -51,7 +51,7 @@ public class OrderService
             buttons.Add(new[]
             {
                 InlineKeyboardButton.WithCallbackData(
-                    $"{addr.City}, {addr.Address}",
+                    $"{addr.City}, {addr.Addresss}",
                     $"selectAddress_{addr.Id}")
             });
         }

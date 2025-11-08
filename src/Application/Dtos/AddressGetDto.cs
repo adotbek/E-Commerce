@@ -9,4 +9,7 @@ public class AddressGetDto
     public string Street { get; set; } = default!;
     public string? Apartment { get; set; }
     public string? PostalCode { get; set; }
+    public string FullName { get; set; } = null!;
+    public string Address { get; set; } = null!;
+
 }

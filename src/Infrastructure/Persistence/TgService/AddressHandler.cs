@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Application.Dtos;
+using Domain.Entities;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Concurrent;
 using System.Text;
@@ -75,7 +77,7 @@ public class AddressHandler
         var session = _sessions[chatId];
 
         if (string.IsNullOrEmpty(session.FullName))
-        {
+        {   
             session.FullName = text;
             await _botClient.SendTextMessageAsync(chatId, "Iltimos, adresni kiriting:");
         }
@@ -102,17 +104,17 @@ public class AddressHandler
             var user = await context.Users.FirstOrDefaultAsync(u => u.TelegramId == chatId);
             if (user != null)
             {
-                var addr = new DeliveryAddress
+                var addr = new Address
                 {
                     UserId = user.UserId,
                     FullName = session.FullName,
-                    Address = session.Address,
+                    Addresss = session.Address,
                     City = session.City,
                     PostalCode = session.PostalCode,
                     Country = session.Country
                 };
 
-                await context.DeliveryAddresses.AddAsync(addr);
+                await context.Addresses.AddAsync(addr);
                 await context.SaveChangesAsync();
 
                 await _botClient.SendTextMessageAsync(chatId, "✅ Adres muvaffaqiyatli saqlandi!");
@@ -134,7 +136,7 @@ public class AddressHandler
             return;
         }
 
-        var addresses = await context.DeliveryAddresses
+        var addresses = await context.Addresses
             .Where(a => a.UserId == user.UserId)
             .OrderBy(a => a.Id)
             .ToListAsync();
@@ -152,7 +154,7 @@ public class AddressHandler
 
         var textMessage = new StringBuilder();
         textMessage.AppendLine($"👤 <b>{addr.FullName}</b>");
-        textMessage.AppendLine($"🏠 {addr.Address}");
+        textMessage.AppendLine($"🏠 {addr.Addresss}");
         textMessage.AppendLine($"🌆 {addr.City}");
         textMessage.AppendLine($"📮 {addr.PostalCode}");
         textMessage.AppendLine($"🌍 {addr.Country}");
@@ -177,5 +179,5 @@ public class AddressHandler
         }
     }
 
-    private class AddressSession : DeliveryAddressCreateDto { }
+    private class AddressSession : AddressCreateDto { }
 }

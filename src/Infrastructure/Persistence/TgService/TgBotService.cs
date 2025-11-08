@@ -20,7 +20,7 @@ namespace Infrastructure.Persistence.TgService;
 public class TgBotService : BackgroundService, ITelegramBotService
 {
     private readonly ILogger<TgBotService> _logger;
-    private readonly ITelegramBotClient _botClient;
+    private readonly TelegramBotClient _botClient;
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly AddressHandler _addressHandler;
     private readonly ProductBotService _productBotService;
@@ -338,7 +338,7 @@ public class TgBotService : BackgroundService, ITelegramBotService
                 Discount = discountAmount
             };
 
-            PaymentDto paymentDto;
+            PaymentGetDto paymentDto;
             try
             {
                 paymentDto = await paymentService.ProcessTelegramPaymentAsync(chatId, dto);
@@ -462,7 +462,7 @@ public class TgBotService : BackgroundService, ITelegramBotService
                     {
                         message2.AppendLine($"ID: {order.Id}");
                         message2.AppendLine($"Status: {order.Status}");
-                        message2.AppendLine($"Umumiy summa: {order.TotalPrice:C}");
+                        message2.AppendLine($"Umumiy summa: {order.TotalAmount:C}");
                         message2.AppendLine($"Sana: {order.CreatedAt:dd.MM.yyyy}");
                         message2.AppendLine("---------------------------");
                     }
@@ -516,7 +516,7 @@ public class TgBotService : BackgroundService, ITelegramBotService
 
             var user = await context.Users
                 .Include(u => u.Orders)
-                .ThenInclude(o => o.OrderItems)
+                .ThenInclude(o => o.Items)
                 .FirstOrDefaultAsync(u => u.TelegramId == chatId);
 
             if (user == null)
@@ -542,7 +542,7 @@ public class TgBotService : BackgroundService, ITelegramBotService
                 {
                     payment = new Payment
                     {
-                        Amount = order.TotalPrice,
+                        Amount = order.TotalAmount,
                         Status = PaymentStatus.Pending,
                         OrderId = order.Id
                     };
@@ -567,7 +567,7 @@ public class TgBotService : BackgroundService, ITelegramBotService
 
                 var messageText = new StringBuilder();
                 messageText.AppendLine($"🧾 Order ID: {order.Id}");
-                messageText.AppendLine($"📦 Mahsulotlar soni: {order.OrderItems.Count}");
+                messageText.AppendLine($"📦 Mahsulotlar soni: {order.Items.Count}");
                 messageText.AppendLine($"💰 To‘lov miqdori: {payment.Amount} $");
                 messageText.AppendLine($"⏳ Status: {payment.Status}");
 

@@ -23,6 +23,7 @@ public class User
 
     public long PaymentOptionId { get; set; }
     public PaymentOption PaymentOption { get; set; }
+    public Card? Card { get; set; }
 
     public ICollection<RefreshToken> RefreshTokens { get; set; }
 
@@ -31,4 +32,6 @@ public class User
     public ICollection<Review>? Reviews { get; set; }
     public ICollection<Wishlist>? Wishlists { get; set; }
     public ICollection<Cart>? Carts { get; set; }
+    public ICollection<CartItem> CartItems { get; set; }
+
 }

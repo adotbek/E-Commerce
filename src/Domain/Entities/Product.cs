@@ -9,6 +9,7 @@ public class Product
     public decimal Price { get; set; }
     public decimal? DiscountPrice { get; set; }
     public int StockQuantity { get; set; }
+    public string SecretCode { get; set; }
     public string? Brand { get; set; }
     public double Rating { get; set; }
     public int ReviewCount { get; set; }
@@ -17,6 +18,7 @@ public class Product
     public bool IsNewArrival { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
+    public ICollection<ProductVariant> Variants { get; set; } = new List<ProductVariant>();
     public Category Category { get; set; } = default!;
     public ICollection<ProductImage>? Images { get; set; }
     public ICollection<WishlistItem> WishlistItems { get; set; }
