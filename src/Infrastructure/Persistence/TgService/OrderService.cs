@@ -101,14 +101,14 @@ public class OrderService
             UserId = user.UserId,
             AddressId = address.Id,
             Status = OrderStatus.Pending,
-            TotalPrice = user.CartItems.Sum(ci => ci.Quantity * ci.UnitPrice)
+            TotalAmount = user.CartItems.Sum(ci => ci.Quantity * ci.UnitPrice)
         };
 
         foreach (var ci in user.CartItems)
         {
-            order.OrderItems.Add(new OrderItem
+            order.Items.Add(new OrderItem
             {
-                ProductVariantId = ci.ProductVariantId,
+                ProductId = ci.ProductId,
                 Quantity = ci.Quantity,
                 UnitPrice = ci.UnitPrice
             });
@@ -118,7 +118,7 @@ public class OrderService
         _context.CartItems.RemoveRange(user.CartItems);
         await _context.SaveChangesAsync();
 
-        await _botClient.SendTextMessageAsync(chatId, $"✅ Buyurtma yaratildi! Umumiy summa: {order.TotalPrice} $");
+        await _botClient.SendTextMessageAsync(chatId, $"✅ Buyurtma yaratildi! Umumiy summa: {order.TotalAmount} $");
     }
 
     public async Task HandleCallbackQueryAsync(Telegram.Bot.Types.CallbackQuery query)

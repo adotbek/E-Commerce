@@ -146,529 +146,102 @@ public class TgBotService : BackgroundService, ITelegramBotService
         _logger.LogInformation("🛑 Telegram bot stopped.");
     }
 
-    private async Task HandleUpdateAsync(Update update)
+    private async Task HandleUpdateAsync(ITelegramBotClient _botClient, Update update, IServiceScope scope)
     {
+        if (update.Type == UpdateType.Message && update.Message!.Type == MessageType.Text)
+        {
+            var chatId = update.Message.Chat.Id;
+            var text = update.Message.Text!.Trim();
+
+            var orderService = scope.ServiceProvider.GetRequiredService<IOrderService>();
+            var productService = scope.ServiceProvider.GetRequiredService<IProductService>();
+            var paymentService = scope.ServiceProvider.GetRequiredService<IPaymentService>();
+
+            if (text.Equals("/start", StringComparison.OrdinalIgnoreCase))
+            {
+                await _botClient.SendTextMessageAsync(
+                    chatId,
+                    "👋 Salom! Buyurtma berish uchun mahsulot tanlang yoki /orders buyrug‘idan foydalaning."
+                );
+                return;
+            }
+
+            if (text.Equals("/orders", StringComparison.OrdinalIgnoreCase))
+            {
+                var orders = await orderService.GetAllByTelegramChatIdAsync(chatId);
+                if (!orders.Any())
+                {
+                    await _botClient.SendTextMessageAsync(chatId, "Sizda hali hech qanday buyurtma yo‘q.");
+                    return;
+                }
+
+                foreach (var order in orders)
+                {
+                    string msg =
+                        $"🧾 Buyurtma ID: {order.Id}\n" +
+                        $"🕒 Sana: {order.CreatedAt:dd.MM.yyyy HH:mm}\n" +
+                        $"💰 Umumiy summa: {order.TotalAmount}\n" +
+                        $"📦 Status: {order.Status}";
+
+                    var buttons = new List<InlineKeyboardButton[]>
+                {
+                    new[]
+                    {
+                        InlineKeyboardButton.WithCallbackData("💳 To‘lash (Kartadan)", $"payOrderCard_{order.Id}"),
+                        InlineKeyboardButton.WithCallbackData("💵 Naqd to‘lash", $"payOrderCash_{order.Id}")
+                    }
+                };
+
+                    await _botClient.SendTextMessageAsync(chatId, msg, replyMarkup: new InlineKeyboardMarkup(buttons));
+                }
+
+                return;
+            }
+
+            await _botClient.SendTextMessageAsync(chatId, "Noma’lum buyruq. /start yoki /orders ni yozing.");
+        }
+
         if (update.Type == UpdateType.CallbackQuery)
         {
-            using var scope = _scopeFactory.CreateScope();
-            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-            var paginationHandler = new ProductPaginationHandler(_botClient, context);
             var query = update.CallbackQuery!;
+            var chatId = query.Message!.Chat.Id;
 
-            if (query.Data!.StartsWith("page_")
-                || query.Data.StartsWith("variant_")
-                || query.Data.StartsWith("addcart_")
-                || query.Data.StartsWith("addcartvariant_"))
-            {
-                await paginationHandler.HandleCallbackQueryAsync(query);
-            }
-            else if (query.Data.StartsWith("filter_") || query.Data.StartsWith("filteritem_"))
-            {
-                await _productBotService.HandleCallbackQueryAsync(query);
-            }
-            else if (query.Data.StartsWith("myAddresses")
-                     || query.Data.StartsWith("pageAddr_")
-                     || query.Data.StartsWith("createAddress"))
-            {
-                await _addressHandler.HandleCallbackQueryAsync(query);
-            }
-            else if (query.Data.StartsWith("pageAddr_") || query.Data.StartsWith("selectAddress_"))
-            {
-                var orderService = new OrderService(_botClient, context);
-                await orderService.HandleCallbackQueryAsync(query);
-            }
-            if (query.Data.StartsWith("removeCartItem_"))
+            var paymentService = scope.ServiceProvider.GetRequiredService<IPaymentService>();
+
+            if (query.Data!.StartsWith("payOrderCard_") || query.Data.StartsWith("payOrderCash_"))
             {
                 var idStr = query.Data.Split("_")[1];
-                if (long.TryParse(idStr, out var cartItemId))
-                {
-                    var item = await context.CartItems
-                        .Include(ci => ci.Product)
-                        .FirstOrDefaultAsync(ci => ci.Id == cartItemId);
-
-                    if (item != null)
-                    {
-                        context.CartItems.Remove(item);
-                        await context.SaveChangesAsync();
-
-                        await _botClient.AnswerCallbackQueryAsync(query.Id, "✅ Mahsulot savatdan o‘chirildi!");
-                        await _botClient.DeleteMessageAsync(query.Message.Chat.Id, query.Message.MessageId);
-                    }
-                    else
-                    {
-                        await _botClient.AnswerCallbackQueryAsync(query.Id, "❌ Mahsulot topilmadi.");
-                    }
-                }
-            }
-            if (query.Data == "cancel")
-            {
-                if (query.Message != null)
-                {
-                    await _botClient.EditMessageTextAsync(
-                        chatId: query.Message.Chat.Id,
-                        messageId: query.Message.MessageId,
-                        text: "❌ Amal bekor qilindi."
-                    );
-                }
-            }
-            if (query.Data.StartsWith("categoryFilter") ||
-                query.Data.StartsWith("tagFilter") ||
-                query.Data.StartsWith("brandFilter"))
-            {
-
-            }
-
-            if (query.Data.StartsWith("payOrderCard_") || query.Data.StartsWith("payOrderCash_"))
-            {
-                var idStr = query.Data.Split("_")[1];
-                if (!long.TryParse(idStr, out var paymentId))
+                if (!long.TryParse(idStr, out var orderId))
                     return;
 
-                var method = query.Data.StartsWith("payOrderCard_") ? PaymentMethod.Card : PaymentMethod.Cash;
+                var method = query.Data.StartsWith("payOrderCard_")
+                    ? PaymentMethod.Card
+                    : PaymentMethod.Cash;
 
-                var keyboard = new InlineKeyboardMarkup(new[]
-                {
-        new[]
-        {
-            InlineKeyboardButton.WithCallbackData("✅ Ha", $"promoYes_{paymentId}_{method}"),
-            InlineKeyboardButton.WithCallbackData("❌ Yo‘q", $"promoNo_{paymentId}_{method}")
-        }
-    });
-
-                await _botClient.EditMessageTextAsync(
-                    query.Message.Chat.Id,
-                    query.Message.MessageId,
-                    "💡 Sizda promokod bormi?",
-                    replyMarkup: keyboard
-                );
-            }
-
-            if (query.Data.StartsWith("promoYes_"))
-            {
-                var parts = query.Data.Split("_");
-                var paymentId = long.Parse(parts[1]);
-                var method = Enum.Parse<PaymentMethod>(parts[2]);
-
-                PendingPromoEntries[query.Message.Chat.Id] = (paymentId, true, method);
-
-                await _botClient.EditMessageTextAsync(
-                    query.Message.Chat.Id,
-                    query.Message.MessageId,
-                    "Iltimos, promokodingizni yuboring:"
-                );
-            }
-            if (query.Data.StartsWith("promoNo_"))
-            {
-                var paymentId = long.Parse(query.Data.Split("_")[1]);
-                PendingPromoEntries.Remove(query.Message.Chat.Id);
-
-                var paymentService = scope.ServiceProvider.GetRequiredService<IPaymentService>();
                 var dto = new PaymentCreateDto
                 {
-                    OrderId = paymentId,
-                    Method = query.Data.StartsWith("promoNo_") && query.Data.Contains("Card") ? PaymentMethod.Card : PaymentMethod.Cash
+                    OrderId = orderId,
+                    Method = method
                 };
 
                 try
                 {
-                    var paymentDto = await paymentService.ProcessTelegramPaymentAsync(query.Message.Chat.Id, dto);
+                    var paymentDto = await paymentService.ProcessTelegramPaymentAsync(chatId, dto);
                     await _botClient.AnswerCallbackQueryAsync(query.Id, "✅ To‘lov amalga oshirildi!");
                     await _botClient.EditMessageTextAsync(
-                        query.Message.Chat.Id,
+                        chatId,
                         query.Message.MessageId,
-                        $"✅ Order {paymentDto.OrderId} uchun to‘lov muvaffaqiyatli amalga oshirildi."
+                        $"✅ Buyurtma {paymentDto.OrderId} uchun to‘lov muvaffaqiyatli amalga oshirildi."
                     );
                 }
                 catch (Exception ex)
                 {
                     await _botClient.AnswerCallbackQueryAsync(query.Id, $"❌ Xato: {ex.Message}");
                 }
-            }
 
-
-
-
-
-            return;
-        }
-
-
-        if (update.Type != UpdateType.Message || update.Message == null)
-            return;
-
-
-
-        var message = update.Message;
-        var chatId = message.Chat.Id;
-        var text = message.Text ?? "";
-
-
-        using var scope2 = _scopeFactory.CreateScope();
-        var context2 = scope2.ServiceProvider.GetRequiredService<AppDbContext>();
-        var roleRepo = scope2.ServiceProvider.GetRequiredService<IRoleRepository>();
-        var paginationHandler2 = new ProductPaginationHandler(_botClient, context2);
-
-
-        if (PendingPromoEntries.TryGetValue(chatId, out var entry) && entry.WaitingForPromo)
-        {
-            var orderId = entry.OrderId;
-            var method = entry.Method;
-            var discountService = scope2.ServiceProvider.GetRequiredService<IDiscountService>();
-
-            var user = await context2.Users.FirstOrDefaultAsync(u => u.TelegramId == chatId);
-            decimal? discountAmount = await discountService.ValidateDiscountAsync(text, user.UserId);
-
-            if (discountAmount != null)
-            {
-                await _botClient.SendTextMessageAsync(chatId, $"✅ Promokod muvaffaqiyatli qo‘llandi! Chegirma: {discountAmount}%");
-            }
-            else
-            {
-                await _botClient.SendTextMessageAsync(chatId, "❌ Promokod noto‘g‘ri yoki muddati tugagan.");
-                PendingPromoEntries.Remove(chatId);
                 return;
             }
-
-            var paymentService = scope2.ServiceProvider.GetRequiredService<IPaymentService>();
-            var dto = new PaymentCreateDto
-            {
-                OrderId = orderId,
-                Method = method,
-                Discount = discountAmount
-            };
-
-            PaymentGetDto paymentDto;
-            try
-            {
-                paymentDto = await paymentService.ProcessTelegramPaymentAsync(chatId, dto);
-            }
-            catch (Exception ex)
-            {
-                await _botClient.SendTextMessageAsync(chatId, $"❌ Xato: {ex.Message}");
-                PendingPromoEntries.Remove(chatId);
-                return;
-            }
-            await discountService.ApplyDiscountAsync(user.UserId, text);
-            await _botClient.SendTextMessageAsync(chatId, $"✅ Order {paymentDto.OrderId} uchun to‘lov amalga oshirildi!\n💰 Summa : {paymentDto.Amount} $");
-
-            PendingPromoEntries.Remove(chatId);
-            return;
-        }
-
-
-
-        if (text.StartsWith("/start"))
-        {
-            var args = update.Message.Text.Split(' ', 2);
-            var param = args.Length > 1 ? args[1] : null;
-
-            if (!string.IsNullOrEmpty(param))
-            {
-                var product = await context2.Products
-                    .Include(p => p.Variants)
-                    .FirstOrDefaultAsync(p => p.SecretCode == param);
-
-                if (product != null)
-                {
-                    var paginationHandler = new ProductPaginationHandler(_botClient, context2);
-                    await _productBotService.ShowProductAsync(
-                        chatId: update.Message.Chat.Id,
-                        products: new List<Product> { product },
-                        page: 1
-                    );
-                }
-                else
-                {
-                    await _botClient.SendTextMessageAsync(
-                        chatId: update.Message.Chat.Id,
-                        text: "❌ Bunday maxfiy kodli mahsulot topilmadi."
-                    );
-                }
-            }
-            else
-            {
-                var keyboard = new ReplyKeyboardMarkup(new[]
-    {
-        new KeyboardButton[] { "📦 Mahsulotlar", "🛒 Savat", "📦 Buyurtmalar" },
-        new KeyboardButton[] { "💳 To‘lovlar", "👛 Hamyon", "🏠 Manzillar" },
-        new KeyboardButton[] { "💰 To‘lash", "🧾 Order yaratish", "❓ Yordam" },
-        new KeyboardButton[] { "🔎 Mahsulotlarni Qidirish" }
-    })
-                {
-                    ResizeKeyboard = true,
-                    OneTimeKeyboard = false
-                };
-
-                await _botClient.SendTextMessageAsync(
-                    chatId,
-                    "Salom 👋 StylePoint onlayn do‘kon botiga xush kelibsiz! Quyidagi tugmalardan foydalanishingiz mumkin:",
-                    replyMarkup: keyboard
-                );
-
-
-                var exists = await context2.Users.AnyAsync(x => x.TelegramId == chatId);
-                if (!exists)
-                {
-                    var user = new Domain.Entities.User
-                    {
-                        TelegramId = chatId,
-                        FirstName = message.Chat.FirstName ?? "Anon",
-                        LastName = message.Chat.LastName ?? "Anon",
-                        RoleId = await roleRepo.GetRoleIdAsync("User"),
-                    };
-
-                    await context2.Users.AddAsync(user);
-                    await context2.SaveChangesAsync();
-
-                    var card = new Card
-                    {
-                        UserId = user.UserId,
-                        Balance = 0,
-                        CardNumber = Guid.NewGuid()
-                    };
-
-                    await context2.Cards.AddAsync(card);
-                    await context2.SaveChangesAsync();
-                }
-            }
-        }
-        else if (text.Equals("❓ Yordam"))
-        {
-            await _botClient.SendTextMessageAsync(chatId,
-                "Admin : @dotned");
-        }
-        else if (text.Equals("📦 Mahsulotlar"))
-        {
-            await paginationHandler2.ShowProductAsync(chatId, 1);
-        }
-        else if (text.Equals("📦 Buyurtmalar"))
-        {
-            var user = await context2.Users
-                .Include(x => x.Orders)
-                .FirstOrDefaultAsync(o => o.TelegramId == chatId);
-            var orders = user.Orders.ToList();
-
-            if (orders.Count == 0)
-            {
-                await _botClient.SendTextMessageAsync(chatId, "📦 Sizda hozircha buyurtmalar mavjud emas.");
-            }
-            else
-            {
-                var message2 = new StringBuilder("📦 Sizning buyurtmalaringiz:\n\n");
-                foreach (var order in orders)
-                {
-                    if (order.Status != OrderStatus.Completed)
-                    {
-                        message2.AppendLine($"ID: {order.Id}");
-                        message2.AppendLine($"Status: {order.Status}");
-                        message2.AppendLine($"Umumiy summa: {order.TotalAmount:C}");
-                        message2.AppendLine($"Sana: {order.CreatedAt:dd.MM.yyyy}");
-                        message2.AppendLine("---------------------------");
-                    }
-                }
-
-                await _botClient.SendTextMessageAsync(chatId, message2.ToString());
-            }
-        }
-        else if (text.Equals("💳 To‘lovlar"))
-        {
-            var user = await context2.Users.FirstOrDefaultAsync(x => x.TelegramId == chatId);
-            var payments = await context2.Payments
-                .Include(x => x.Order)
-                .Where(p => p.Order.UserId == user.UserId).ToListAsync();
-
-            if (payments.Count == 0)
-            {
-                await _botClient.SendTextMessageAsync(chatId, "💳 Sizda hozircha to‘lovlar mavjud emas.");
-            }
-            else
-            {
-                var message2 = new StringBuilder("💳 Sizning to‘lovlaringiz:\n\n");
-                foreach (var payment in payments)
-                {
-                    message2.AppendLine($"ID: {payment.Id}");
-                    message2.AppendLine($"Summasi: {payment.Amount:C}");
-                    message2.AppendLine($"Payment Status: {payment.Status}");
-                    message2.AppendLine($"Payment Method: {payment.Method}");
-                    message2.AppendLine($"Sana: {payment.PaidAt:dd.MM.yyyy}");
-                    message2.AppendLine("---------------------------");
-                }
-
-                await _botClient.SendTextMessageAsync(chatId, message2.ToString());
-            }
-        }
-
-        else if (text.Equals("🏠 Manzillar"))
-        {
-            await _addressHandler.ShowAddressMenuAsync(chatId);
-        }
-
-        else if (text.Equals("🔎 Mahsulotlarni Qidirish"))
-        {
-            await _productBotService.HandleSearchCommandAsync(chatId);
-        }
-        else if (text.Equals("💰 To‘lash"))
-        {
-            using var scope = _scopeFactory.CreateScope();
-            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            var paymentService = scope.ServiceProvider.GetRequiredService<IPaymentService>();
-
-            var user = await context.Users
-                .Include(u => u.Orders)
-                .ThenInclude(o => o.Items)
-                .FirstOrDefaultAsync(u => u.TelegramId == chatId);
-
-            if (user == null)
-            {
-                await _botClient.SendTextMessageAsync(chatId, "❌ Foydalanuvchi topilmadi.");
-                return;
-            }
-
-            var pendingOrders = user.Orders
-                .Where(o => o.Status == OrderStatus.Pending)
-                .ToList();
-
-            if (!pendingOrders.Any())
-            {
-                await _botClient.SendTextMessageAsync(chatId, "✅ Sizda to‘lov qilinishi kerak bo‘lgan orderlar mavjud emas.");
-                return;
-            }
-
-            foreach (var order in pendingOrders)
-            {
-                var payment = await context.Payments.FirstOrDefaultAsync(p => p.OrderId == order.Id);
-                if (payment == null)
-                {
-                    payment = new Payment
-                    {
-                        Amount = order.TotalAmount,
-                        Status = PaymentStatus.Pending,
-                        OrderId = order.Id
-                    };
-                    await context.Payments.AddAsync(payment);
-                    await context.SaveChangesAsync();
-                }
-
-                var keyboard = new InlineKeyboardMarkup(new[]
-                {
-            new[]
-            {
-                InlineKeyboardButton.WithCallbackData(
-                    "💳 To‘lash (Kartadan)",
-                    $"payOrderCard_{order.Id}"
-                ),
-                InlineKeyboardButton.WithCallbackData(
-                    "💵 Naqd to‘lash",
-                    $"payOrderCash_{order.Id}"
-                )
-            }
-        });
-
-                var messageText = new StringBuilder();
-                messageText.AppendLine($"🧾 Order ID: {order.Id}");
-                messageText.AppendLine($"📦 Mahsulotlar soni: {order.Items.Count}");
-                messageText.AppendLine($"💰 To‘lov miqdori: {payment.Amount} $");
-                messageText.AppendLine($"⏳ Status: {payment.Status}");
-
-                await _botClient.SendTextMessageAsync(chatId, messageText.ToString(), replyMarkup: keyboard);
-            }
-        }
-
-
-
-
-        else if (text.Equals("\U0001f6d2 Savat"))
-        {
-            using var scope = _scopeFactory.CreateScope();
-            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-            var user = await context.Users
-                .Include(u => u.Card)
-                .Include(c => c.CartItems)
-                .ThenInclude(x => x.ProductVariant)
-                .ThenInclude(v => v.Product)
-                .FirstOrDefaultAsync(u => u.TelegramId == chatId);
-
-            if (user == null || user.Card == null || !user.CartItems.Any())
-            {
-                await _botClient.SendTextMessageAsync(chatId, "🛒 Savatingiz bo‘sh.");
-                return;
-            }
-
-            foreach (var item in user.CartItems)
-            {
-                var variant = item.ProductVariant;
-
-                var keyboard = new InlineKeyboardMarkup(new[]
-                {
-            new[]
-            {
-                InlineKeyboardButton.WithCallbackData(
-                    "🗑️ Olib tashlash",
-                    $"removeCartItem_{item.Id}"
-                )
-            }
-        });
-
-                var messageText = new StringBuilder();
-                messageText.AppendLine($"📦 Mahsulot: {variant.Product.Name}");
-                messageText.AppendLine($"🔹 Variant: {variant.Color}");
-                messageText.AppendLine($"💰 Umumiy Narxi: {variant.Price * item.Quantity} $");
-                messageText.AppendLine($"🔢 Miqdor: {item.Quantity}");
-
-                await _botClient.SendTextMessageAsync(
-                    chatId,
-                    messageText.ToString(),
-                    replyMarkup: keyboard
-                );
-            }
-        }
-
-
-        else if (text.Equals("👛 Hamyon"))
-        {
-            using var scope = _scopeFactory.CreateScope();
-            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-            var user = await context.Users
-                .Include(u => u.Card)
-                .FirstOrDefaultAsync(u => u.TelegramId == chatId);
-
-            if (user == null || user.Card == null)
-            {
-                await _botClient.SendTextMessageAsync(chatId, "❌ Sizning kartangiz topilmadi.");
-                return;
-            }
-
-            var card = user.Card;
-
-            var textMessage = new StringBuilder();
-            textMessage.AppendLine($"💳 Kartangiz: <b>{card.CardNumber}</b>");
-            textMessage.AppendLine($"💰 Balans: <b>{card.Balance} $</b>");
-            textMessage.AppendLine();
-            textMessage.AppendLine("⚠️ Balansni to‘ldirish uchun admin bilan bog‘laning: @dotned");
-
-            await _botClient.SendTextMessageAsync(
-                chatId,
-                textMessage.ToString(),
-                parseMode: ParseMode.Html
-            );
-        }
-
-        else if (text.Equals("\U0001f9fe Order yaratish"))
-        {
-            using var scope = _scopeFactory.CreateScope();
-            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            var orderService = new OrderService(_botClient, context);
-
-            await orderService.ShowAddressesAsync(chatId, 1);
-        }
-
-
-        else
-        {
-            await _addressHandler.HandleUserMessageAsync(message);
         }
     }
+
 }

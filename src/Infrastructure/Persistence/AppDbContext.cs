@@ -24,6 +24,8 @@ public class AppDbContext : DbContext
     public DbSet<OrderItem> OrderItems{ get; set; }
     public DbSet<PaymentOption> PaymentOptions { get; set; }
     public DbSet<Product> Products { get; set; }
+    public DbSet<ProductVariant> ProductVariants { get; set; }
+
     public DbSet<ProductImage> ProductImages{ get; set; }
     public DbSet<Review> Reviews{ get; set; }
     public DbSet<Wishlist> Wishlists { get; set; }

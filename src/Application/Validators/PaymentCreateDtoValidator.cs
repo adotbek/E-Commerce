@@ -14,8 +14,8 @@ public class PaymentCreateDtoValidator : AbstractValidator<PaymentCreateDto>
             .GreaterThan(0).WithMessage("Amount must be greater than zero.");
 
         RuleFor(x => x.Method)
-            .NotEmpty().WithMessage("Payment method is required.")
-            .MaximumLength(50).WithMessage("Payment method must not exceed 50 characters.");
+            .IsInEnum().WithMessage("Invalid payment method.");
+
 
         RuleFor(x => x.TransactionId)
             .NotEmpty().WithMessage("Transaction ID is required.")

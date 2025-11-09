@@ -11,6 +11,7 @@ public class Order
     public string PaymentMethod { get; set; } = default!;
     public OrderStatus Status { get; set; } = OrderStatus.Pending;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public long AddressId { get; set; }
 
     public User User { get; set; } = default!;
     public ICollection<OrderItem>? Items { get; set; }

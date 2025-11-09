@@ -78,9 +78,7 @@ public class ProductBotService
 
         IEnumerable<(long Id, string Name)> items = filterType switch
         {
-            "category" => (await _context.Categories.ToListAsync()).Select(c => (c.Id, c.Name)),
-            "brand" => (await _context.Brands.ToListAsync()).Select(b => (b.Id, b.Name)),
-            "tag" => (await _context.Tags.ToListAsync()).Select(t => (t.Id, t.Name)),
+            "category" => (await _context.Categories.ToListAsync()).Select(c => (c.Id, c.Name)),           
             _ => Enumerable.Empty<(long, string)>()
         };
 
@@ -105,8 +103,6 @@ public class ProductBotService
         List<Product> products = filterType switch
         {
             "category" => (await _context.Products.Where(x => x.CategoryId == itemId).ToListAsync()),
-            "brand" => (await _context.Products.Where(x => x.BrandId == itemId).ToListAsync()),
-            "tag" => (await _context.Products.Where(x => x.ProductTags.Any(x => x.TagId == itemId)).ToListAsync()),
             _ => new List<Product>()
         };
 
