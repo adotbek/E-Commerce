@@ -12,9 +12,9 @@ public static class PaymentMapper
             Id = entity.Id,
             OrderId = entity.OrderId,
             Amount = entity.Amount,
-            Method = entity.Method,
-            TransactionId = entity.TransactionId,
-            Status = entity.Status,
+            //Method = entity.Method,
+            //TransactionId = entity.TransactionId,
+            Status = entity.Status.ToString(),
             CreatedAt = entity.CreatedAt
         };
     }
@@ -25,9 +25,9 @@ public static class PaymentMapper
         {
             OrderId = dto.OrderId,
             Amount = dto.Amount,
-            Method = dto.Method,
-            TransactionId = dto.TransactionId,
-            PaymentOptionId = dto.PaymentOptionId
+            //Method = dto.Method,
+            //TransactionId = dto.TransactionId,
+            //PaymentOptionId = dto.PaymentOptionId
         };
     }
 

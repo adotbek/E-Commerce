@@ -18,20 +18,15 @@ public class User
     public long RoleId { get; set; }
     public Role Role { get; set; }
 
+    public long CardId { get; set; }
+    public Card Card { get; set; }
+
+
     public long? ConfirmerId { get; set; }
     public UserConfirmer? Confirmer { get; set; }
 
-    public long PaymentOptionId { get; set; }
-    public PaymentOption PaymentOption { get; set; }
-    public Card? Card { get; set; }
-
     public ICollection<RefreshToken> RefreshTokens { get; set; }
-
-    public ICollection<Address>? Addresses { get; set; }
-    public ICollection<Order>? Orders { get; set; }
-    public ICollection<Review>? Reviews { get; set; }
-    public ICollection<Wishlist>? Wishlists { get; set; }
-    public ICollection<Cart>? Carts { get; set; }
-    public ICollection<CartItem> CartItems { get; set; }
-
+    public ICollection<Address> Addresses { get; set; }
+    public ICollection<Order> Orders { get; set; }
+    public ICollection<Cart> Carts { get; set; }
 }

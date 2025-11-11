@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Domain.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,5 +10,5 @@ namespace Application.Dtos;
 public class PaymentUpdateDto
 {
     public long Id { get; set; }
-    public string Status { get; set; } = default!;
+    public PaymentStatus Status { get; set; } = default!;
 }

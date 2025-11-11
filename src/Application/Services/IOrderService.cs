@@ -1,4 +1,5 @@
 ﻿using Application.Dtos;
+using Domain.Enums;
 
 namespace Application.Interfaces.Services;
 
@@ -13,8 +14,8 @@ public interface IOrderService
     Task DeleteAsync(long id);
 
     Task<IEnumerable<OrderGetDto>> GetByUserIdAsync(long userId);
-    Task UpdateStatusAsync(long id, string status);
-    Task<IEnumerable<OrderGetDto>> GetByStatusAsync(string status);
+    Task UpdateStatusAsync(long id, OrderStatus status);
+    Task<IEnumerable<OrderGetDto>> GetByStatusAsync(OrderStatus status);
 
     Task<decimal> CalculateTotalAmountAsync(long orderId);
     Task<IEnumerable<OrderGetDto>> GetRecentOrdersAsync(int count);

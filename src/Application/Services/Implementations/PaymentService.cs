@@ -95,7 +95,7 @@ public class PaymentService : IPaymentService
         return entity is null ? null : PaymentMapper.ToDto(entity);
     }
 
-    public async Task UpdateStatusAsync(long paymentId, string newStatus)
+    public async Task UpdateStatusAsync(long paymentId, PaymentStatus newStatus)
     {
         await _repository.UpdateStatusAsync(paymentId, newStatus);
     }
@@ -111,7 +111,7 @@ public class PaymentService : IPaymentService
 
         var newPaymentId = await _repository.AddAsync(payment);
 
-        payment.Status = "Completed";
+        payment.Status = PaymentStatus.Paid;
 
         await _repository.UpdateAsync(payment);
 

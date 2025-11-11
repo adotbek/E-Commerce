@@ -27,7 +27,7 @@ public static class UserMapper
             ProfileImgUrl = entity.ProfileImgUrl,
             //TelegramId = entity.TelegramId,
             RoleName = entity.Role.Name,
-            PaymentOptionId = entity.PaymentOptionId
+            //PaymentOptionId = entity.PaymentOptionId
         };
     }
 }

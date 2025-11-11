@@ -8,5 +8,5 @@ public class Cart
     public User User { get; set; } = default!;
     public long UserId { get; set; }
     public bool IsActive { get; set; }
-    public ICollection<CartItem>? Items { get; set; }
+    public ICollection<CartItem> Items { get; set; }
 }

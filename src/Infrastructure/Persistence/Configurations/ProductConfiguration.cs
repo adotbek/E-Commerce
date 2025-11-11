@@ -16,19 +16,26 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
             .IsRequired()
             .HasMaxLength(200);
 
-        builder.Property(p => p.Price)
-            .HasColumnType("decimal(18,2)")
-            .IsRequired();
-
-        builder.Property(p => p.DiscountPrice)
-            .HasColumnType("decimal(18,2)");
+        builder.Property(p => p.Description)
+            .HasMaxLength(1000);
 
         builder.Property(p => p.Brand)
-            .HasMaxLength(100);
+            .HasMaxLength(200);
+
+        builder.Property(p => p.Rating)
+            .IsRequired();
+
+        builder.Property(p => p.ImageUrl)
+            .HasMaxLength(500);
 
         builder.HasOne(p => p.Category)
-            .WithMany(c => c.Products)
+            .WithMany(c => c.Products) 
             .HasForeignKey(p => p.CategoryId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasMany(p => p.Variants)
+            .WithOne(v => v.Product) 
+            .HasForeignKey(v => v.ProductId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

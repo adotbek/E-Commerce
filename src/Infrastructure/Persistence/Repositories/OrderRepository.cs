@@ -1,5 +1,6 @@
 ﻿using Application.Interfaces.Repositories;
 using Domain.Entities;
+using Domain.Enums;
 using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,8 +19,8 @@ public class OrderRepository : IOrderRepository
     {
         return await _context.Orders
             .Include(o => o.User)
-            .Include(o => o.Items)
-            .ThenInclude(oi => oi.Product)
+            //.Include(o => o.Items)
+            //.ThenInclude(oi => oi.Product)
             .OrderByDescending(o => o.CreatedAt)
             .ToListAsync();
     }
@@ -28,8 +29,8 @@ public class OrderRepository : IOrderRepository
     {
         return await _context.Orders
             .Include(o => o.User)
-            .Include(o => o.Items)
-            .ThenInclude(oi => oi.Product)
+            //.Include(o => o.Items)
+            //.ThenInclude(oi => oi.Product)
             .FirstOrDefaultAsync(o => o.Id == id);
     }
 
@@ -59,14 +60,14 @@ public class OrderRepository : IOrderRepository
     public async Task<IEnumerable<Order>> GetByUserIdAsync(long userId)
     {
         return await _context.Orders
-            .Include(o => o.Items)
-            .ThenInclude(i => i.Product)
+            //.Include(o => o.Items)
+            //.ThenInclude(i => i.Product)
             .Where(o => o.UserId == userId)
             .OrderByDescending(o => o.CreatedAt)
             .ToListAsync();
     }
 
-    public async Task UpdateStatusAsync(long id, string status)
+    public async Task UpdateStatusAsync(long id, OrderStatus status)
     {
         var order = await _context.Orders.FindAsync(id);
         if (order is null)
@@ -76,11 +77,11 @@ public class OrderRepository : IOrderRepository
         await _context.SaveChangesAsync();
     }
 
-    public async Task<IEnumerable<Order>> GetByStatusAsync(string status)
+    public async Task<IEnumerable<Order>> GetByStatusAsync(OrderStatus status)
     {
         return await _context.Orders
-            .Include(o => o.Items)
-            .ThenInclude(i => i.Product)
+            //.Include(o => o.Items)
+            //.ThenInclude(i => i.Product)
             .Where(o => o.Status == status)
             .OrderByDescending(o => o.CreatedAt)
             .ToListAsync();
@@ -89,25 +90,26 @@ public class OrderRepository : IOrderRepository
     public async Task<decimal> CalculateTotalAmountAsync(long orderId)
     {
         var order = await _context.Orders
-            .Include(o => o.Items)
+            //.Include(o => o.Items)
             .FirstOrDefaultAsync(o => o.Id == orderId);
 
         if (order is null)
             throw new KeyNotFoundException($"Order with Id={orderId} not found.");
 
-        var total = order.Items?.Sum(i => i.Quantity * i.UnitPrice) ?? 0;
-        order.TotalAmount = total;
+        //var total = order.Items?.Sum(i => i.Quantity * i.UnitPrice) ?? 0;
+        //order.TotalAmount = total;
 
         await _context.SaveChangesAsync();
-        return total;
+        //return total;
+        throw new NotImplementedException();
     }
 
     public async Task<IEnumerable<Order>> GetRecentOrdersAsync(int count)
     {
         return await _context.Orders
             .Include(o => o.User)
-            .Include(o => o.Items)
-            .ThenInclude(i => i.Product)
+            //.Include(o => o.Items)
+            //.ThenInclude(i => i.Product)
             .OrderByDescending(o => o.CreatedAt)
             .Take(count)
             .ToListAsync();
@@ -121,9 +123,9 @@ public class OrderRepository : IOrderRepository
     public async Task<IEnumerable<Order>> GetPendingOrdersAsync()
     {
         return await _context.Orders
-            .Include(o => o.Items)
-            .ThenInclude(i => i.Product)
-            .Where(o => o.Status == "Pending")
+            //.Include(o => o.Items)
+            //.ThenInclude(i => i.Product)
+            .Where(o => o.Status == OrderStatus.Pending)
             .OrderByDescending(o => o.CreatedAt)
             .ToListAsync();
     }
@@ -131,8 +133,8 @@ public class OrderRepository : IOrderRepository
     public async Task<IEnumerable<Order>> GetByDateRangeAsync(DateTime from, DateTime to)
     {
         return await _context.Orders
-            .Include(o => o.Items)
-            .ThenInclude(i => i.Product)
+            //.Include(o => o.Items)
+            //.ThenInclude(i => i.Product)
             .Where(o => o.CreatedAt >= from && o.CreatedAt <= to)
             .OrderByDescending(o => o.CreatedAt)
             .ToListAsync();

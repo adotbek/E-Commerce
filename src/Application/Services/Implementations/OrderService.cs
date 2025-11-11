@@ -2,6 +2,7 @@
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
 using Application.Mappers;
+using Domain.Enums;
 
 namespace Application.Services;
 
@@ -54,12 +55,12 @@ public class OrderService : IOrderService
         return orders.Select(OrderMapper.ToDto);
     }
 
-    public async Task UpdateStatusAsync(long id, string status)
+    public async Task UpdateStatusAsync(long id, OrderStatus status)
     {
         await _repository.UpdateStatusAsync(id, status);
     }
 
-    public async Task<IEnumerable<OrderGetDto>> GetByStatusAsync(string status)
+    public async Task<IEnumerable<OrderGetDto>> GetByStatusAsync(OrderStatus status)
     {
         var orders = await _repository.GetByStatusAsync(status);
         return orders.Select(OrderMapper.ToDto);

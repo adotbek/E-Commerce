@@ -1,5 +1,6 @@
 ﻿using Application.Dtos;
 using Domain.Entities;
+using Domain.Enums;
 
 namespace Application.Interfaces.Services;
 
@@ -16,7 +17,7 @@ public interface IPaymentService
     Task<decimal> GetTotalPaidByUserAsync(long userId);
     Task<decimal> GetTotalPaidInPeriodAsync(DateTime startDate, DateTime endDate);
     Task<PaymentGetDto?> GetByTransactionIdAsync(string transactionId);
-    Task UpdateStatusAsync(long paymentId, string newStatus);
+    Task UpdateStatusAsync(long paymentId, PaymentStatus newStatus);
     Task<bool> IsPaymentCompletedAsync(long orderId);
     Task DeleteAsync(long id);
     Task<PaymentGetDto> ProcessTelegramPaymentAsync(long telegramId, PaymentCreateDto dto);

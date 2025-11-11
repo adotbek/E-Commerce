@@ -5,5 +5,5 @@ public class Category
     public long Id { get; set; }
     public string Name { get; set; } = default!;
 
-    public ICollection<Product>? Products { get; set; }
+    public ICollection<Product> Products { get; set; }
 }

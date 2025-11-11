@@ -63,7 +63,7 @@ public class ProductRepository : IProductRepository
     {
         return await _context.Products
             .AsNoTracking()
-            .Where(p => p.IsFeatured)
+            //.Where(p => p.IsFeatured)
             .ToListAsync();
     }
 
@@ -71,8 +71,8 @@ public class ProductRepository : IProductRepository
     {
         return await _context.Products
             .AsNoTracking()
-            .Where(p => p.IsNewArrival)
-            .OrderByDescending(p => p.CreatedAt)
+            //.Where(p => p.IsNewArrival)
+            //.OrderByDescending(p => p.CreatedAt)
             .ToListAsync();
     }
 
@@ -101,7 +101,7 @@ public class ProductRepository : IProductRepository
         if (product is null)
             return;
 
-        product.StockQuantity = quantity;
+        //product.StockQuantity = quantity;
         await _context.SaveChangesAsync();
     }
 
@@ -109,7 +109,7 @@ public class ProductRepository : IProductRepository
     {
         return await _context.Products
             .AsNoTracking()
-            .Where(p => p.StockQuantity <= 0)
+            //.Where(p => p.StockQuantity <= 0)
             .ToListAsync();
     }
 
@@ -118,7 +118,8 @@ public class ProductRepository : IProductRepository
         var product = await _context.Products
             .AsNoTracking()
             .FirstOrDefaultAsync(p => p.Id == productId);
+        throw new NotImplementedException();
+        //return product?.DiscountPrice;
 
-        return product?.DiscountPrice;
     }
 }

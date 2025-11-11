@@ -1,4 +1,5 @@
 ﻿using Domain.Entities;
+using Domain.Enums;
 
 namespace Application.Interfaces.Repositories;
 
@@ -16,6 +17,6 @@ public interface IPaymentRepository
     Task<decimal> GetTotalPaidByUserAsync(long userId);
     Task<decimal> GetTotalPaidInPeriodAsync(DateTime startDate, DateTime endDate);
     Task<Payment?> GetByTransactionIdAsync(string transactionId);
-    Task UpdateStatusAsync(long paymentId, string newStatus);
+    Task UpdateStatusAsync(long paymentId, PaymentStatus newStatus);
     Task<bool> IsPaymentCompletedAsync(long orderId);
 }

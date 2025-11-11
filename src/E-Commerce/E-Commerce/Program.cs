@@ -3,6 +3,7 @@ using E_Commerce.Configurations;
 using E_Commerce.Endpoints;
 using E_Commerce.Extensions;
 using E_Commerce.Middlewares;
+using Telegram.Bot;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,6 +19,27 @@ builder.Services.ConfigureDependecies();
 builder.ConfigureJwtSettings();
 
 
+//builder.Services.AddCors(options =>
+//{
+//    options.AddPolicy("AllowLocalhost5173", policy =>
+//    {
+//        policy.WithOrigins(
+//            "http://localhost:4200",
+//            "http://localhost:5173"
+//        )
+//        .AllowAnyHeader()
+//        .AllowAnyMethod();
+//    });
+//});
+
+var botToken = builder.Configuration["TelegramBot:Token"];
+if (string.IsNullOrEmpty(botToken))
+    throw new InvalidOperationException("? Telegram bot token topilmadi!");
+builder.Services.AddSingleton<ITelegramBotClient>(new TelegramBotClient(botToken));
+//builder.Services.AddSingleton<ProductBotService>();
+
+//builder.Services.AddSingleton<ITelegramBotService, TgBotService>();
+//builder.Services.AddSingleton<IHostedService>(sp => (TgBotService)sp.GetRequiredService<ITelegramBotService>());
 
 
 ServiceCollectionExtensions.AddSwaggerWithJwt(builder.Services);

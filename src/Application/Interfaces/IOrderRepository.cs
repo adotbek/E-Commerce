@@ -1,5 +1,6 @@
 ﻿using Application.Dtos;
 using Domain.Entities;
+using Domain.Enums;
 
 namespace Application.Interfaces.Repositories;
 
@@ -11,8 +12,8 @@ public interface IOrderRepository
     Task UpdateAsync(Order entity);
     Task DeleteAsync(long id);
     Task<IEnumerable<Order>> GetByUserIdAsync(long userId);
-    Task UpdateStatusAsync(long id, string status);
-    Task<IEnumerable<Order>> GetByStatusAsync(string status);
+    Task UpdateStatusAsync(long id, OrderStatus status);
+    Task<IEnumerable<Order>> GetByStatusAsync(OrderStatus status);
     Task<decimal> CalculateTotalAmountAsync(long orderId);
     Task<IEnumerable<Order>> GetRecentOrdersAsync(int count);
     Task<bool> ExistsAsync(long orderId);

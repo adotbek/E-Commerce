@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Application.Interfaces.Services;
 using Application.Dtos;
+using Domain.Enums;
 
 namespace Api.Endpoints;
 
@@ -41,14 +42,14 @@ public static class OrderEndpoints
         })
         .WithName("GetOrdersByUserId");
 
-        group.MapPut("/{id:long}/status", async (long id, [FromQuery] string status, [FromServices] IOrderService service) =>
+        group.MapPut("/{id:long}/status", async (long id, [FromQuery] OrderStatus status, [FromServices] IOrderService service) =>
         {
             await service.UpdateStatusAsync(id, status);
             return Results.NoContent();
         })
         .WithName("UpdateOrderStatus");
 
-        group.MapGet("/status/{status}", async (string status, [FromServices] IOrderService service) =>
+        group.MapGet("/status/{status}", async (OrderStatus status, [FromServices] IOrderService service) =>
         {
             var orders = await service.GetByStatusAsync(status);
             return Results.Ok(orders);

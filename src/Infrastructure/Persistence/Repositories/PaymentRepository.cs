@@ -1,7 +1,9 @@
 ﻿using Application.Interfaces.Repositories;
 using Domain.Entities;
+using Domain.Enums;
 using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.ObjectModel;
 
 namespace Infrastructure.Repositories;
 
@@ -16,20 +18,22 @@ public class PaymentRepository : IPaymentRepository
 
     public async Task<IEnumerable<Payment>> GetAllAsync()
     {
-        return await _context.Payments
-            .Include(p => p.Order)
-            .Include(p => p.PaymentOption)
-            .AsNoTracking()
-            .ToListAsync();
+        //return await _context.Payments
+        //    .Include(p => p.Order)
+        //    .Include(p => p.PaymentOption)
+        //    .AsNoTracking()
+        //    .ToListAsync();
+        throw new NotImplementedException();
     }
 
     public async Task<Payment?> GetByIdAsync(long id)
     {
-        return await _context.Payments
-            .Include(p => p.Order)
-            .Include(p => p.PaymentOption)
-            .AsNoTracking()
-            .FirstOrDefaultAsync(p => p.Id == id);
+        //return await _context.Payments
+        //    .Include(p => p.Order)
+        //    .Include(p => p.PaymentOption)
+        //    .AsNoTracking()
+        //    .FirstOrDefaultAsync(p => p.Id == id);
+        throw new NotImplementedException();
     }
 
     public async Task<long> AddAsync(Payment entity)
@@ -57,28 +61,29 @@ public class PaymentRepository : IPaymentRepository
 
     // 🔹 Qo‘shimcha real funksiyalar
 
-    public async Task<IEnumerable<Payment>> GetByUserIdAsync(long userId)
+    public async Task<Collection<Payment>> GetByUserIdAsync(long userId)
     {
-        return await _context.Payments
-            .Include(p => p.PaymentOption)
-            .Include(p => p.Order)
-            .Where(p => p.Order.UserId == userId)
-            .AsNoTracking()
-            .ToListAsync();
+        //return await _context.Payments
+        //    .Include(p => p.Order)
+        //    .Where(p => p.Order.UserId == userId)
+        //    .AsNoTracking()
+        //    .ToListAsync();
+        throw new NotImplementedException();
     }
 
     public async Task<Payment?> GetByOrderIdAsync(long orderId)
     {
-        return await _context.Payments
-            .Include(p => p.PaymentOption)
-            .AsNoTracking()
-            .FirstOrDefaultAsync(p => p.OrderId == orderId);
+        //return await _context.Payments
+        //    .Include(p => p.PaymentOption)
+        //    .AsNoTracking()
+        //    .FirstOrDefaultAsync(p => p.OrderId == orderId);
+        throw new NotImplementedException();
     }
 
     public async Task<IEnumerable<Payment>> GetByStatusAsync(string status)
     {
         return await _context.Payments
-            .Where(p => p.Status.ToLower() == status.ToLower())
+            .Where(p => p.Status.ToString().ToLower() == status.ToLower())
             .AsNoTracking()
             .ToListAsync();
     }
@@ -94,25 +99,26 @@ public class PaymentRepository : IPaymentRepository
     public async Task<decimal> GetTotalPaidByUserAsync(long userId)
     {
         return await _context.Payments
-            .Where(p => p.Order.UserId == userId && p.Status == "Completed")
+            .Where(p => p.Order.UserId == userId && p.Status == PaymentStatus.Paid)
             .SumAsync(p => p.Amount);
     }
 
     public async Task<decimal> GetTotalPaidInPeriodAsync(DateTime startDate, DateTime endDate)
     {
         return await _context.Payments
-            .Where(p => p.CreatedAt >= startDate && p.CreatedAt <= endDate && p.Status == "Completed")
+            .Where(p => p.CreatedAt >= startDate && p.CreatedAt <= endDate && p.Status == PaymentStatus.Paid)
             .SumAsync(p => p.Amount);
     }
 
     public async Task<Payment?> GetByTransactionIdAsync(string transactionId)
     {
-        return await _context.Payments
-            .AsNoTracking()
-            .FirstOrDefaultAsync(p => p.TransactionId == transactionId);
+        throw new NotImplementedException();
+        //return await _context.Payments
+        //    .AsNoTracking()
+        //    .FirstOrDefaultAsync(p => p.TransactionId == transactionId);
     }
 
-    public async Task UpdateStatusAsync(long paymentId, string newStatus)
+    public async Task UpdateStatusAsync(long paymentId, PaymentStatus newStatus)
     {
         var payment = await _context.Payments.FindAsync(paymentId);
         if (payment is null)
@@ -122,9 +128,15 @@ public class PaymentRepository : IPaymentRepository
         await _context.SaveChangesAsync();
     }
 
+
     public async Task<bool> IsPaymentCompletedAsync(long orderId)
     {
         return await _context.Payments
-            .AnyAsync(p => p.OrderId == orderId && p.Status == "Completed");
+            .AnyAsync(p => p.OrderId == orderId && p.Status == PaymentStatus.Paid);
+    }
+
+    Task<IEnumerable<Payment>> IPaymentRepository.GetByUserIdAsync(long userId)
+    {
+        throw new NotImplementedException();
     }
 }

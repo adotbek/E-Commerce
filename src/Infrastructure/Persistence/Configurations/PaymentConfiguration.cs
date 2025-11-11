@@ -8,37 +8,31 @@ public class PaymentConfiguration : IEntityTypeConfiguration<Payment>
 {
     public void Configure(EntityTypeBuilder<Payment> builder)
     {
-        builder.HasKey(x => x.Id);
+        builder.ToTable("Payments");
 
-        builder.Property(x => x.Amount)
-               .HasPrecision(18, 2)
-               .IsRequired();
+        builder.HasKey(p => p.Id);
 
-        builder.Property(x => x.Method)
-               .HasMaxLength(50)
-               .IsRequired();
+        builder.Property(p => p.Amount)
+            .IsRequired()
+            .HasColumnType("decimal(18,2)");
 
-        builder.Property(x => x.TransactionId)
-               .HasMaxLength(100)
-               .IsRequired();
+        builder.Property(p => p.Status)
+            .IsRequired();
 
-        builder.Property(x => x.Status)
-               .HasMaxLength(30)
-               .HasDefaultValue("Pending");
+        builder.Property(p => p.CreatedAt)
+            .IsRequired();
 
-        //builder.HasOne(x => x.User)
-        //       .WithMany()
-        //       .HasForeignKey(x => x.UserId)
-        //       .OnDelete(DeleteBehavior.Restrict);
+        builder.Property(p => p.PaidAt)
+            .IsRequired(false);
 
-        builder.HasOne(x => x.Order)
-               .WithOne()
-               .HasForeignKey<Payment>(x => x.OrderId)
-               .OnDelete(DeleteBehavior.Cascade);
+        builder.HasOne(p => p.Order)
+            .WithMany() 
+            .HasForeignKey(p => p.OrderId)
+            .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasOne(x => x.PaymentOption)
-               .WithMany()
-               .HasForeignKey(x => x.PaymentOptionId)
-               .OnDelete(DeleteBehavior.SetNull);
+        builder.HasOne(p => p.Card)
+            .WithMany(c => c.Payments)
+            .HasForeignKey(p => p.CardId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

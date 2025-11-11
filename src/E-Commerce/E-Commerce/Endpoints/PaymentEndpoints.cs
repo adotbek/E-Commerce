@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Application.Interfaces.Services;
 using Application.Dtos;
+using Domain.Enums;
 
 namespace Api.Endpoints;
 
@@ -97,7 +98,7 @@ public static class PaymentEndpoints
         })
         .WithName("GetPaymentByTransactionId");
 
-        group.MapPut("/{paymentId:long}/status", async (long paymentId, [FromQuery] string newStatus, [FromServices] IPaymentService service) =>
+        group.MapPut("/{paymentId:long}/status", async (long paymentId, [FromQuery] PaymentStatus newStatus, [FromServices] IPaymentService service) =>
         {
             await service.UpdateStatusAsync(paymentId, newStatus);
             return Results.NoContent();

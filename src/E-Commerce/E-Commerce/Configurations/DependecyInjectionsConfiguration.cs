@@ -85,6 +85,6 @@ public static class DependecyInjectionsConfiguration
         services.AddScoped<ITokenService, TokenService>();
 
 
-
+        
     }
 }

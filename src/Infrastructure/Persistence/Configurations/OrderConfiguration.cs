@@ -13,27 +13,29 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
         builder.HasKey(o => o.Id);
 
         builder.Property(o => o.TotalAmount)
-               .HasColumnType("decimal(18,2)")
-               .IsRequired();
-
-        builder.Property(o => o.ShippingAddress)
-               .HasMaxLength(255)
-               .IsRequired();
-
-        builder.Property(o => o.PaymentMethod)
-               .HasMaxLength(50)
-               .IsRequired();
+            .IsRequired()
+            .HasColumnType("decimal(18,2)");
 
         builder.Property(o => o.Status)
-               .HasMaxLength(30)
-               .HasDefaultValue("Pending");
+            .IsRequired();
 
         builder.Property(o => o.CreatedAt)
-               .HasDefaultValueSql("GETUTCDATE()");
+            .IsRequired();
+
+        builder.HasOne(o => o.Address)
+            .WithMany()
+            .HasForeignKey(o => o.AddressId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(o => o.User)
-               .WithMany(u => u.Orders)
-               .HasForeignKey(o => o.UserId)
-               .OnDelete(DeleteBehavior.Cascade);
+            .WithMany() 
+            .HasForeignKey(o => o.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne(o => o.Cart)
+            .WithMany() 
+            .HasForeignKey(o => o.CartId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
+
