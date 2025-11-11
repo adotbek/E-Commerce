@@ -63,14 +63,9 @@ app.MapAdminEndpoints();
 app.MapAddressEndpoints();
 app.MapCartEndpoints();
 app.MapCategoryEndpoints();
-app.MapCouponEndpoints();
 app.MapOrderEndpoints();
 app.MapPaymentEndpoints();
-app.MapPaymentOptionEndpoints();
 app.MapProductEndpoints();
-app.MapProductImageEndpoints();
-app.MapReviewEndpoints();
-app.MapWishlistEndpoints();
 
 app.MapControllers();
 
