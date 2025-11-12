@@ -12,70 +12,39 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 
         builder.HasKey(u => u.UserId);
 
-        builder.Property(u => u.FirstName)
-            .IsRequired()
-            .HasMaxLength(100);
-
-        builder.Property(u => u.LastName)
-            .IsRequired()
-            .HasMaxLength(100);
-
-        builder.Property(u => u.UserName)
-            .IsRequired()
-            .HasMaxLength(50);
-
-        builder.Property(u => u.Email)
-            .IsRequired()
-            .HasMaxLength(150);
-
-        builder.Property(u => u.Hash)
-            .IsRequired();
-
-        builder.Property(u => u.Salt)
-            .IsRequired();
-
-        builder.Property(u => u.GoogleId)
-            .HasMaxLength(200);
-
-        builder.Property(u => u.ProfileImgUrl)
-            .HasMaxLength(500);
-
-        builder.Property(u => u.TelegramId)
-            .IsRequired(false);
-
-        builder.HasOne(u => u.Role)
-            .WithMany() 
-            .HasForeignKey(u => u.RoleId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        builder.HasOne(u => u.Card)
-            .WithOne(c => c.User) 
-            .HasForeignKey<User>(u => u.CardId)
-            .OnDelete(DeleteBehavior.Cascade);
+        builder.Property(u => u.FirstName).HasMaxLength(100).IsRequired();
+        builder.Property(u => u.LastName).HasMaxLength(100).IsRequired();
+        builder.Property(u => u.Password).IsRequired(false);
+        builder.Property(u => u.Salt).IsRequired(false);
+        builder.Property(u => u.ConfirmerId).IsRequired(false);
 
         builder.HasOne(u => u.Confirmer)
-            .WithMany() 
-            .HasForeignKey(u => u.ConfirmerId)
-            .OnDelete(DeleteBehavior.SetNull);
+               .WithOne(c => c.User)
+               .HasForeignKey<User>(u => u.ConfirmerId)
+               .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasMany(u => u.RefreshTokens)
-            .WithOne(rt => rt.User)
-            .HasForeignKey(rt => rt.UserId)
-            .OnDelete(DeleteBehavior.Cascade);
+        builder.HasOne(u => u.Role)
+               .WithMany(r => r.Users)
+               .HasForeignKey(u => u.RoleId)
+               .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasMany(u => u.Addresses)
-            .WithOne(a => a.User) 
-            .HasForeignKey(a => a.UserId)
-            .OnDelete(DeleteBehavior.Cascade);
+        builder.HasMany(x => x.Orders)
+               .WithOne(o => o.User)
+               .HasForeignKey(o => o.UserId);
 
-        builder.HasMany(u => u.Orders)
-            .WithOne(o => o.User) 
-            .HasForeignKey(o => o.UserId)
-            .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasMany(u => u.Carts)
-            .WithOne(c => c.User) 
-            .HasForeignKey(c => c.UserId)
-            .OnDelete(DeleteBehavior.Cascade);
+        builder
+        .HasOne(u => u.Card)
+        .WithOne(c => c.User)
+        .HasForeignKey<Card>(c => c.UserId);
+
+        builder.HasMany(x => x.CartItems)
+               .WithOne(c => c.User)
+               .HasForeignKey(c => c.UserId);
+
+        builder.HasMany(x => x.Addresses)
+               .WithOne(a => a.User)
+               .HasForeignKey(a => a.UserId);
+
     }
 }

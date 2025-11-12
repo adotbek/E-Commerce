@@ -3,104 +3,160 @@ using Application.DTOs;
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
 using Application.Mappers;
+using Core.Errors;
+using Domain.Entities;
 
 namespace Application.Services;
 
 public class ProductService : IProductService
 {
-    private readonly IProductRepository _repository;
-    private readonly ICategoryRepository _categoryRepository;
-
-    public ProductService(IProductRepository repository, ICategoryRepository categoryRepository)
+    private readonly IProductRepository _repo;
+    private readonly ITelegramBotService _telegramBotService;
+    private readonly ICloudService _cloud;
+    public ProductService(IProductRepository repo, ICloudService cloud, ITelegramBotService telegramBotService)
     {
-        _repository = repository;
-        _categoryRepository = categoryRepository;
+        _repo = repo;
+        _cloud = cloud;
+        _telegramBotService = telegramBotService;
     }
 
-    public async Task<IEnumerable<ProductDto>> GetAllAsync()
+
+    public async Task<bool> DeleteProductAsync(long productId)
     {
-        var products = await _repository.GetAllAsync();
-        return products.Select(ProductMapper.ToDto).ToList();
+        var product = await _repo.GetByIdAsync(productId);
+        if (product == null) return false;
+
+        await _repo.DeleteAsync(product.Id);
+        return true;
+    }
+
+    public async Task<long> AddProductAsync(ProductCreateDto dto)
+    {
+        if (string.IsNullOrWhiteSpace(dto.SecretCode))
+        {
+            throw new NotAllowedException("Secret Code Kiriting");
+        }
+        var product = new Product
+        {
+            Name = dto.Name,
+            Description = dto.Description,
+            ImageUrl = dto.Image,
+            CategoryId = dto.CategoryId,
+            BrandId = dto.BrandId,
+            DiscountPrice = dto.DiscountPrice,
+            Price = dto.Price,
+            SecretCode = dto.SecretCode,
+            Variants = dto.Variants.Select(v => new ProductVariant
+            {
+                Size = v.Size,
+                Color = v.Color,
+                Stock = v.Stock,
+                Price = v.Price
+            }).ToList(),
+            ProductTags = dto.TagIds.Select(tagId => new ProductTag
+            {
+                TagId = tagId
+            }).ToList()
+        };
+
+
+        var id = await _repo.AddAsync(product);
+
+        await _telegramBotService.NotifyNewProductAsync(product);
+        return id;
+
+    }
+
+
+    public async Task<ProductDto> UpdateProductAsync(long productId, ProductUpdateDto dto)
+    {
+        var product = await _repo.GetByIdAsync(productId);
+        if (product == null)
+            throw new InvalidOperationException("Product not found.");
+
+        product.Name = dto.Name ?? product.Name;
+        product.Description = dto.Description ?? product.Description;
+        product.Price = dto.Price ?? product.Price;
+        product.DiscountPrice = dto.DiscountPrice ?? product.DiscountPrice;
+        product.CategoryId = dto.CategoryId ?? product.CategoryId;
+        product.BrandId = dto.BrandId ?? product.BrandId;
+        product.SecretCode = dto.SecretCode ?? product.SecretCode;
+
+        await _repo.UpdateAsync(product);
+        return MapToDto(product);
+    }
+
+
+    public async Task<ICollection<ProductDto>> GetAllAsync()
+    {
+        var products = await _repo.GetAllAsync();
+        return products.Select(MapToDto).ToList();
+    }
+
+    public async Task<ICollection<ProductDto>> GetBestSellersAsync()
+    {
+        var products = await _repo.GetBestSellersAsync();
+        return products.Select(MapToDto).ToList();
+    }
+
+    public async Task<ICollection<ProductDto>> GetByBrandAsync(long brandId)
+    {
+        var products = await _repo.GetByBrandAsync(brandId);
+        return products.Select(MapToDto).ToList();
+    }
+
+    public async Task<ICollection<ProductDto>> GetByCategoryAsync(long categoryId)
+    {
+        var products = await _repo.GetByCategoryAsync(categoryId);
+        return products.Select(MapToDto).ToList();
     }
 
     public async Task<ProductDto?> GetByIdAsync(long id)
     {
-        var entity = await _repository.GetByIdAsync(id);
-        return entity is null ? null : ProductMapper.ToDto(entity);
+        var product = await _repo.GetByIdAsync(id);
+        return product is null ? null : MapToDto(product);
     }
 
-    public async Task<long> AddProductAsync(ProductCreateDto dto, long categoryId)
+    public async Task<ICollection<ProductDto>> GetByTagAsync(long tagId)
     {
-        var category = await _categoryRepository.GetByIdAsync(categoryId);
-        if (category is null)
-            throw new KeyNotFoundException($"Category with ID {categoryId} not found.");
-
-        var entity = ProductMapper.ToEntity(dto, categoryId);
-        await _repository.AddAsync(entity);
-        return entity.Id;
+        var products = await _repo.GetByTagAsync(tagId);
+        return products.Select(MapToDto).ToList();
     }
 
-    public async Task UpdateAsync(ProductDto dto, long categoryId, long id)
+    public async Task<ICollection<ProductDto>> GetNewArrivalsAsync()
     {
-        var entity = await _repository.GetByIdAsync(id);
-        if (entity is null)
-            throw new KeyNotFoundException($"Product with ID {id} not found.");
-
-        var category = await _categoryRepository.GetByIdAsync(categoryId);
-        if (category is null)
-            throw new KeyNotFoundException($"Category with ID {categoryId} not found.");
-
-        ProductMapper.UpdateEntity(entity, dto, categoryId);
-        await _repository.UpdateAsync(entity);
+        var products = await _repo.GetNewArrivalsAsync();
+        return products.Select(MapToDto).ToList();
     }
 
-    public async Task DeleteAsync(long id)
+    public async Task<ICollection<ProductDto>> SearchAsync(string keyword)
     {
-        await _repository.DeleteAsync(id);
+        var products = await _repo.SearchAsync(keyword);
+        return products.Select(MapToDto).ToList();
     }
 
-    public async Task<IEnumerable<ProductDto>> GetByCategoryIdAsync(long categoryId)
+    private ProductDto MapToDto(Product product)
     {
-        var products = await _repository.GetByCategoryIdAsync(categoryId);
-        return products.Select(ProductMapper.ToDto).ToList();
-    }
+        return new ProductDto
+        {
+            Id = product.Id,
+            Name = product.Name,
+            Description = product.Description,
+            Price = product.Price,
+            DiscountPrice = product.DiscountPrice,
+            ImageUrl = product.ImageUrl,
+            CategoryName = product.Category.Name,
+            BrandName = product.Brand.Name,
+            SecretCode = product.SecretCode,
+            Variants = product.Variants.Select(v => new ProductVariantDto
+            {
+                Id = v.Id,
+                Size = v.Size,
+                Color = v.Color,
+                Stock = v.Stock,
+                Price = v.Price
+            }).ToList(),
 
-    public async Task<IEnumerable<ProductDto>> GetFeaturedAsync()
-    {
-        var products = await _repository.GetFeaturedAsync();
-        return products.Select(ProductMapper.ToDto).ToList();
-    }
-
-    public async Task<IEnumerable<ProductDto>> GetNewArrivalsAsync()
-    {
-        var products = await _repository.GetNewArrivalsAsync();
-        return products.Select(ProductMapper.ToDto).ToList();
-    }
-
-    public async Task<IEnumerable<ProductDto>> SearchAsync(string keyword)
-    {
-        var products = await _repository.SearchAsync(keyword);
-        return products.Select(ProductMapper.ToDto).ToList();
-    }
-
-    public async Task<bool> ExistsAsync(long id)
-    {
-        return await _repository.ExistsAsync(id);
-    }
-
-    public async Task UpdateStockAsync(long id, int quantity)
-    {
-        await _repository.UpdateStockAsync(id, quantity);
-    }
-
-    public async Task<IEnumerable<ProductDto>> GetOutOfStockAsync()
-    {
-        var products = await _repository.GetOutOfStockAsync();
-        return products.Select(ProductMapper.ToDto).ToList();
-    }
-
-    public async Task<decimal?> GetDiscountPriceAsync(long productId)
-    {
-        return await _repository.GetDiscountPriceAsync(productId);
+        };
     }
 }

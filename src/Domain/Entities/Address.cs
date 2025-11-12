@@ -3,7 +3,6 @@
 public class Address
 {
     public long Id { get; set; }
-    public string Country { get; set; } = default!;
     public string Addresss { get; set; } = null!;
     public string City { get; set; } = default!;
     public string Street { get; set; } = default!;

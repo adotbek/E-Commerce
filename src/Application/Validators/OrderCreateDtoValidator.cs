@@ -20,10 +20,5 @@ public class OrderCreateDtoValidator : AbstractValidator<OrderCreateDto>
         RuleFor(x => x.PaymentMethod)
             .NotEmpty().WithMessage("Payment method is required.")
             .MaximumLength(50).WithMessage("Payment method must not exceed 50 characters.");
-
-        RuleFor(x => x.Items)
-            .NotNull().WithMessage("Order must have at least one item.")
-            .Must(items => items != null && items.Any())
-            .WithMessage("Order must contain at least one item.");
     }
 }

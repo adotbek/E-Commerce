@@ -9,5 +9,4 @@ public class OrderGetDto
     public string PaymentMethod { get; set; } = default!;
     public string Status { get; set; } = default!;
     public DateTime CreatedAt { get; set; }
-    public ICollection<OrderItemGetDto>? Items { get; set; }
 }

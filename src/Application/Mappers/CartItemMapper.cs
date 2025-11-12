@@ -11,7 +11,6 @@ public static class CartItemMapper
         {
             Id = entity.Id,
             CartId = entity.CartId,
-            ProductId = entity.ProductId,
             Quantity = entity.Quantity,
             UnitPrice = entity.UnitPrice
         };
@@ -22,7 +21,6 @@ public static class CartItemMapper
         return new CartItem
         {
             CartId = dto.CartId,
-            ProductId = dto.ProductId,
             Quantity = dto.Quantity,
             UnitPrice = dto.UnitPrice
         };
