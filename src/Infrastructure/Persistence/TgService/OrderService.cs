@@ -101,7 +101,7 @@
 //            UserId = user.UserId,
 //            AddressId = address.Id,
 //            Status = OrderStatus.Pending,
-//            TotalAmount = user.CartItems.Sum(ci => ci.Quantity * ci.UnitPrice)
+//            TotalPrice = user.CartItems.Sum(ci => ci.Quantity * ci.UnitPrice)
 //        };
 
 //        foreach (var ci in user.CartItems)
@@ -118,7 +118,7 @@
 //        _context.CartItems.RemoveRange(user.CartItems);
 //        await _context.SaveChangesAsync();
 
-//        await _botClient.SendTextMessageAsync(chatId, $"✅ Buyurtma yaratildi! Umumiy summa: {order.TotalAmount} $");
+//        await _botClient.SendTextMessageAsync(chatId, $"✅ Buyurtma yaratildi! Umumiy summa: {order.TotalPrice} $");
 //    }
 
 //    public async Task HandleCallbackQueryAsync(Telegram.Bot.Types.CallbackQuery query)

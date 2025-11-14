@@ -8,84 +8,48 @@ namespace Infrastructure.Repositories;
 public class CartItemRepository : ICartItemRepository
 {
     private readonly AppDbContext _context;
+    public CartItemRepository(AppDbContext context) => _context = context;
 
-    public CartItemRepository(AppDbContext context)
-    {
-        _context = context;
-    }
-
-    public async Task<long> AddAsync(CartItem entity)
-    {
-        await _context.CartItems.AddAsync(entity);
-        await _context.SaveChangesAsync();
-        return entity.Id;
-    }
+    public async Task<ICollection<CartItem>> GetAllAsync()
+        => await _context.CartItems.Include(c => c.ProductVariant)
+                                   .ToListAsync();
 
     public async Task<CartItem?> GetByIdAsync(long id)
+        => await _context.CartItems.Include(c => c.ProductVariant)
+                                   .FirstOrDefaultAsync(c => c.Id == id);
+
+    public async Task<ICollection<CartItem>> GetUserCartAsync(long userId) =>
+        await _context.CartItems.Include(c => c.ProductVariant)
+                           .Where(c => c.UserId == userId)
+                           .ToListAsync();
+
+    public async Task ClearUserCartAsync(long userId)
     {
-        return await _context.CartItems
-            .Include(ci => ci.Product)
-            .FirstOrDefaultAsync(ci => ci.Id == id);
+        var items = _context.CartItems.Where(c => c.UserId == userId);
+        _context.CartItems.RemoveRange(items);
+        await _context.SaveChangesAsync();
     }
 
-    public async Task<IEnumerable<CartItem>> GetByCartIdAsync(long cartId)
+    public async Task AddAsync(CartItem item)
     {
-        return await _context.CartItems
-            .Include(ci => ci.Product)
-            .Where(ci => ci.CartId == cartId)
-            .ToListAsync();
+        await _context.CartItems.AddAsync(item);
+        await _context.SaveChangesAsync();
     }
 
-    public async Task UpdateAsync(CartItem entity)
+    public async Task UpdateAsync(CartItem item)
     {
-        _context.CartItems.Update(entity);
+        _context.CartItems.Update(item);
         await _context.SaveChangesAsync();
     }
 
     public async Task DeleteAsync(long id)
     {
         var entity = await _context.CartItems.FindAsync(id);
-        if (entity is null)
-            throw new KeyNotFoundException($"Cart item with Id={id} not found.");
+        if (entity != null)
+        {
+            _context.CartItems.Remove(entity);
 
-        _context.CartItems.Remove(entity);
-        await _context.SaveChangesAsync();
-    }
-
-    public async Task IncrementQuantityAsync(long id, int amount = 1)
-    {
-        var item = await _context.CartItems.FindAsync(id);
-        if (item is null)
-            throw new KeyNotFoundException($"Cart item with Id={id} not found.");
-
-        item.Quantity += amount;
-        await _context.SaveChangesAsync();
-    }
-
-    public async Task DecrementQuantityAsync(long id, int amount = 1)
-    {
-        var item = await _context.CartItems.FindAsync(id);
-        if (item is null)
-            throw new KeyNotFoundException($"Cart item with Id={id} not found.");
-
-        item.Quantity -= amount;
-        if (item.Quantity <= 0)
-            _context.CartItems.Remove(item);
-
-        await _context.SaveChangesAsync();
-    }
-
-    public async Task ClearCartAsync(long cartId)
-    {
-        var items = _context.CartItems.Where(ci => ci.CartId == cartId);
-        _context.CartItems.RemoveRange(items);
-        await _context.SaveChangesAsync();
-    }
-
-    public async Task<decimal> GetTotalPriceAsync(long cartId)
-    {
-        return await _context.CartItems
-            .Where(ci => ci.CartId == cartId)
-            .SumAsync(ci => ci.UnitPrice * ci.Quantity);
+            await _context.SaveChangesAsync();
+        }
     }
 }

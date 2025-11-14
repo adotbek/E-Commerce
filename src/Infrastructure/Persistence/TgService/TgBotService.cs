@@ -463,7 +463,7 @@
 //                    {
 //                        message2.AppendLine($"ID: {order.Id}");
 //                        message2.AppendLine($"Status: {order.Status}");
-//                        message2.AppendLine($"Umumiy summa: {order.TotalAmount:C}");
+//                        message2.AppendLine($"Umumiy summa: {order.TotalPrice:C}");
 //                        message2.AppendLine($"Sana: {order.CreatedAt:dd.MM.yyyy}");
 //                        message2.AppendLine("---------------------------");
 //                    }
@@ -543,7 +543,7 @@
 //                {
 //                    payment = new Payment
 //                    {
-//                        Amount = order.TotalAmount,
+//                        Amount = order.TotalPrice,
 //                        Status = PaymentStatus.Pending,
 //                        OrderId = order.Id
 //                    };

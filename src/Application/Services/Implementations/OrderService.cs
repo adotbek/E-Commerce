@@ -1,101 +1,132 @@
 ﻿using Application.Dtos;
+using Application.Interfaces;
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
 using Application.Mappers;
+using Domain.Entities;
 using Domain.Enums;
 
 namespace Application.Services;
 
 public class OrderService : IOrderService
 {
-    private readonly IOrderRepository _repository;
+    private readonly IOrderRepository _orderRepo;
+    private readonly ICartItemRepository _cartRepo;
+    private readonly IOrderItemRepository _orderItemRepo;
+    private readonly IProductVariantRepository _productVariantRepo;
 
-    public OrderService(IOrderRepository repository)
+    public OrderService(
+        IOrderRepository orderRepo,
+        ICartItemRepository cartRepo,
+        IOrderItemRepository orderItemRepo,
+        IProductVariantRepository productVariantRepo)
     {
-        _repository = repository;
+        _orderRepo = orderRepo;
+        _cartRepo = cartRepo;
+        _orderItemRepo = orderItemRepo;
+        _productVariantRepo = productVariantRepo;
     }
 
-    public async Task<IEnumerable<OrderGetDto>> GetAllAsync()
+    public async Task<OrderDto> PlaceOrderAsync(long userId, OrderCreateDto dto)
     {
-        var entities = await _repository.GetAllAsync();
-        return entities.Select(OrderMapper.ToDto);
+        var cartItems = await _cartRepo.GetUserCartAsync(userId);
+        if (!cartItems.Any())
+            throw new InvalidOperationException("Cart is empty.");
+
+        decimal total = 0;
+        var orderItems = new List<OrderItem>();
+
+        foreach (var cartItem in cartItems)
+        {
+            var variant = await _productVariantRepo.GetByIdAsync(cartItem.ProductVariantId);
+            if (variant == null)
+                throw new InvalidOperationException("Product not found.");
+
+            if (cartItem.Quantity > variant.Stock)
+                throw new InvalidOperationException(
+                    $"'{variant.Size}' uchun yetarli stock mavjud emas. Qolgan: {variant.Stock}");
+
+            // ❌ variant.Stock -= cartItem.Quantity;   // O'chirildi
+            // ❌ await _productVariantRepo.UpdateAsync(variant);
+
+            total += cartItem.UnitPrice * cartItem.Quantity;
+
+            orderItems.Add(new OrderItem
+            {
+                ProductVariantId = cartItem.ProductVariantId,
+                Quantity = cartItem.Quantity,
+                UnitPrice = cartItem.UnitPrice,
+            });
+        }
+
+        var order = new Order
+        {
+            UserId = userId,
+            AddressId = dto.AddressId,
+            TotalPrice = total,
+            Status = OrderStatus.Pending,
+            OrderItems = orderItems
+        };
+
+        await _orderRepo.AddAsync(order);
+        await _cartRepo.ClearUserCartAsync(userId);
+
+        return MapToDto(order, orderItems);
     }
 
-    public async Task<OrderGetDto?> GetByIdAsync(long id)
+
+    public async Task<OrderDto?> GetByIdAsync(long userId, long orderId)
     {
-        var entity = await _repository.GetByIdAsync(id);
-        return entity is null ? null : OrderMapper.ToDto(entity);
+        var order = await _orderRepo.GetByIdAsync(orderId);
+        if (order == null || order.UserId != userId) return null;
+
+        return MapToDto(order, order.OrderItems);
     }
 
-    public async Task<long> AddOrderAsync(OrderCreateDto dto)
+    public async Task<ICollection<OrderDto>> GetUserOrdersAsync(long userId)
     {
-        var entity = OrderMapper.ToEntity(dto);
-        await _repository.AddAsync(entity);
-        return entity.Id;
+        var orders = await _orderRepo.GetByUserIdAsync(userId);
+        return orders.Select(o => MapToDto(o, o.OrderItems)).ToList();
     }
 
-    public async Task UpdateAsync(OrderUpdateDto dto, long id)
+    public async Task CancelOrderAsync(long userId, long orderId)
     {
-        var entity = await _repository.GetByIdAsync(id);
-        if (entity is null)
-            throw new KeyNotFoundException($"Order with ID {id} not found.");
+        var order = await _orderRepo.GetByIdAsync(orderId);
+        if (order == null || order.UserId != userId)
+            throw new InvalidOperationException("Order not found.");
 
-        OrderMapper.UpdateEntity(entity, dto);
-        await _repository.UpdateAsync(entity);
+        if (order.Status == OrderStatus.Completed)
+            throw new InvalidOperationException("Completed orders cannot be canceled.");
+
+        foreach (var item in order.OrderItems)
+        {
+            var variant = await _productVariantRepo.GetByIdAsync(item.ProductVariantId);
+            if (variant != null)
+            {
+                variant.Stock += item.Quantity;
+                await _productVariantRepo.UpdateAsync(variant);
+            }
+        }
+
+        order.Status = OrderStatus.Canceled;
+        await _orderRepo.UpdateAsync(order);
     }
 
-    public async Task DeleteAsync(long id)
-    {
-        await _repository.DeleteAsync(id);
-    }
 
-    public async Task<IEnumerable<OrderGetDto>> GetByUserIdAsync(long userId)
-    {
-        var orders = await _repository.GetByUserIdAsync(userId);
-        return orders.Select(OrderMapper.ToDto);
-    }
-
-    public async Task UpdateStatusAsync(long id, OrderStatus status)
-    {
-        await _repository.UpdateStatusAsync(id, status);
-    }
-
-    public async Task<IEnumerable<OrderGetDto>> GetByStatusAsync(OrderStatus status)
-    {
-        var orders = await _repository.GetByStatusAsync(status);
-        return orders.Select(OrderMapper.ToDto);
-    }
-
-    public async Task<decimal> CalculateTotalAmountAsync(long orderId)
-    {
-        return await _repository.CalculateTotalAmountAsync(orderId);
-    }
-
-    public async Task<IEnumerable<OrderGetDto>> GetRecentOrdersAsync(int count)
-    {
-        var orders = await _repository.GetRecentOrdersAsync(count);
-        return orders.Select(OrderMapper.ToDto);
-    }
-
-    public async Task<bool> ExistsAsync(long orderId)
-    {
-        return await _repository.ExistsAsync(orderId);
-    }
-
-    public async Task<IEnumerable<OrderGetDto>> GetPendingOrdersAsync()
-    {
-        var orders = await _repository.GetPendingOrdersAsync();
-        return orders.Select(OrderMapper.ToDto);
-    }
-
-    public async Task<IEnumerable<OrderGetDto>> GetByDateRangeAsync(DateTime from, DateTime to)
-    {
-        var orders = await _repository.GetByDateRangeAsync(from, to);
-        return orders.Select(OrderMapper.ToDto);
-    }
-
-    public async Task<int> GetTotalOrdersCountAsync()
-    {
-        return await _repository.GetTotalOrdersCountAsync();
-    }
+    private static OrderDto MapToDto(Order order, IEnumerable<OrderItem> items) =>
+        new OrderDto
+        {
+            Id = order.Id,
+            CreatedAt = order.CreatedAt,
+            TotalPrice = order.TotalPrice,
+            Status = order.Status,
+            UserId = order.UserId,
+            AddressId = order.AddressId,
+            Items = items.Select(i => new OrderItemDto
+            {
+                ProductVariantId = i.ProductVariantId,
+                Quantity = i.Quantity,
+                UnitPrice = i.UnitPrice
+            }).ToList()
+        };
 }

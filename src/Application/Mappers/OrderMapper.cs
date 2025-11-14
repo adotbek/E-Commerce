@@ -11,7 +11,7 @@ public static class OrderMapper
         //{
         //    Id = entity.Id,
         //    UserId = entity.UserId,
-        //    TotalAmount = entity.TotalAmount,
+        //    TotalPrice = entity.TotalPrice,
         //    ShippingAddress = entity.ShippingAddress,
         //    PaymentMethod = entity.PaymentMethod,
         //    Status = entity.Status.ToString(),
@@ -27,7 +27,7 @@ public static class OrderMapper
         //return new Order
         //{
         //    UserId = dto.UserId,
-        //    TotalAmount = dto.TotalAmount,
+        //    TotalPrice = dto.TotalPrice,
         //    ShippingAddress = dto.ShippingAddress,
         //    PaymentMethod = dto.PaymentMethod,
         //    Items = dto.Items?.Select(OrderItemMapper.ToEntity).ToList()

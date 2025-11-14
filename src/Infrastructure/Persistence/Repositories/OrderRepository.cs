@@ -97,7 +97,7 @@ public class OrderRepository : IOrderRepository
             throw new KeyNotFoundException($"Order with Id={orderId} not found.");
 
         //var total = order.Items?.Sum(i => i.Quantity * i.UnitPrice) ?? 0;
-        //order.TotalAmount = total;
+        //order.TotalPrice = total;
 
         await _context.SaveChangesAsync();
         //return total;

@@ -5,22 +5,8 @@ namespace Application.Interfaces.Services;
 
 public interface IOrderService
 {
-    //
-    Task<IEnumerable<OrderGetDto>> GetAllAsync();
-    Task<OrderGetDto?> GetByIdAsync(long id);
-    Task<long> AddOrderAsync(OrderCreateDto dto);
-    //D
-    Task UpdateAsync(OrderUpdateDto dto, long id);
-    Task DeleteAsync(long id);
-
-    Task<IEnumerable<OrderGetDto>> GetByUserIdAsync(long userId);
-    Task UpdateStatusAsync(long id, OrderStatus status);
-    Task<IEnumerable<OrderGetDto>> GetByStatusAsync(OrderStatus status);
-
-    Task<decimal> CalculateTotalAmountAsync(long orderId);
-    Task<IEnumerable<OrderGetDto>> GetRecentOrdersAsync(int count);
-    Task<bool> ExistsAsync(long orderId);
-    Task<IEnumerable<OrderGetDto>> GetPendingOrdersAsync();
-    Task<IEnumerable<OrderGetDto>> GetByDateRangeAsync(DateTime from, DateTime to);
-    Task<int> GetTotalOrdersCountAsync();
+    Task<OrderDto> PlaceOrderAsync(long userId, OrderCreateDto dto);
+    Task<OrderDto?> GetByIdAsync(long userId, long orderId);
+    Task<ICollection<OrderDto>> GetUserOrdersAsync(long userId);
+    Task CancelOrderAsync(long userId, long orderId);
 }

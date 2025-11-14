@@ -12,7 +12,7 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
 
         builder.HasKey(o => o.Id);
 
-        builder.Property(o => o.TotalAmount)
+        builder.Property(o => o.TotalPrice)
             .IsRequired()
             .HasColumnType("decimal(18,2)");
 

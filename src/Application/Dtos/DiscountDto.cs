@@ -1,0 +1,12 @@
+﻿namespace Application.Dtos;
+
+public class DiscountDto
+{
+    public long Id { get; set; }
+    public string Code { get; set; } = null!;
+    public decimal Percentage { get; set; }
+    public DateTime ExpiryDate { get; set; }
+    public bool IsActive { get; set; }
+    public long UsageLimit { get; set; }
+    public decimal? FinalPrice { get; set; }
+}

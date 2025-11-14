@@ -4,13 +4,11 @@ namespace Application.Interfaces.Repositories;
 
 public interface ICartItemRepository
 {
-    Task<long> AddAsync(CartItem entity);
+    Task<ICollection<CartItem>> GetAllAsync();
     Task<CartItem?> GetByIdAsync(long id);
-    Task<IEnumerable<CartItem>> GetByCartIdAsync(long cartId);
-    Task UpdateAsync(CartItem entity);
+    Task AddAsync(CartItem item);
+    Task UpdateAsync(CartItem item);
     Task DeleteAsync(long id);
-     Task IncrementQuantityAsync(long id, int amount = 1);
-    Task DecrementQuantityAsync(long id, int amount = 1);
-    Task ClearCartAsync(long cartId);
-    Task<decimal> GetTotalPriceAsync(long cartId);
+    Task<ICollection<CartItem>> GetUserCartAsync(long userId);
+    Task ClearUserCartAsync(long userId);
 }

@@ -2,8 +2,6 @@
 
 public class CartItemCreateDto
 {
-    public long CartId { get; set; }
-    public long ProductId { get; set; }
+    public long ProductVariantId { get; set; }
     public int Quantity { get; set; }
-    public decimal UnitPrice { get; set; }
 }

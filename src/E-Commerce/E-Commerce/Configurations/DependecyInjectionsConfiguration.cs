@@ -21,7 +21,7 @@ public static class DependecyInjectionsConfiguration
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IAddressService, AddressService>();
         services.AddScoped<ICartItemService, CartItemService>();
-        services.AddScoped<ICartService, CartService>();
+        services.AddScoped<ICartService, CartItemService>();
         services.AddScoped<IOrderService, OrderService>();
         services.AddScoped<IPaymentService, PaymentService>();
         services.AddScoped<IProductService, ProductService>();
@@ -37,7 +37,7 @@ public static class DependecyInjectionsConfiguration
         services.AddScoped<IAddressRepository, AddressRepository>();
         services.AddScoped<ICartItemRepository, CartItemRepository>();
         services.AddScoped<ICategoryRepository, CategoryRepository>();
-        services.AddScoped<ICartRepository, CartRepository>();
+        services.AddScoped<ICartItemRepository, CartRepository>();
         services.AddScoped<IOrderRepository, OrderRepository>();
         services.AddScoped<IPaymentRepository, PaymentRepository>();
         services.AddScoped<IProductRepository, ProductRepository>();

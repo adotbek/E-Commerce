@@ -1,75 +1,111 @@
 ﻿using Application.Dtos;
+using Application.Interfaces;
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
 using Application.Mappers;
+using Domain.Entities;
 
 namespace Application.Services;
 
 public class CartItemService : ICartItemService
 {
-    private readonly ICartItemRepository _repository;
+    private readonly ICartItemRepository _cartRepository;
+    private readonly IProductVariantRepository _variantRepository;
 
-    public CartItemService(ICartItemRepository repository)
+    public CartItemService(ICartItemRepository cartRepository, IProductVariantRepository variantRepository)
     {
-        _repository = repository;
+        _cartRepository = cartRepository;
+        _variantRepository = variantRepository;
     }
 
-    public async Task<long> AddCartItemAsync(CartItemCreateDto dto)
+    public async Task AddToCartAsync(long userId, CartItemCreateDto dto)
     {
-        var entity = CartItemMapper.ToEntity(dto);
-        await _repository.AddAsync(entity);
-        return entity.Id;
+        var variant = await _variantRepository.GetByIdAsync(dto.ProductVariantId);
+        if (variant == null)
+            throw new Exception("Product variant not found");
+
+        var userCartItems = await _cartRepository.GetAllAsync();
+        var existingItem = userCartItems
+            .FirstOrDefault(x => x.UserId == userId && x.ProductVariantId == dto.ProductVariantId);
+
+        if (existingItem != null)
+        {
+            existingItem.Quantity += dto.Quantity;
+            existingItem.UnitPrice = variant.Price;
+            await _cartRepository.UpdateAsync(existingItem);
+        }
+        else
+        {
+            var cartItem = new CartItem
+            {
+                UserId = userId,
+                ProductVariantId = dto.ProductVariantId,
+                Quantity = dto.Quantity,
+                UnitPrice = variant.Price
+            };
+
+            await _cartRepository.AddAsync(cartItem);
+        }
     }
 
-    public async Task<CartItemGetDto?> GetByIdAsync(long id)
+    public async Task<decimal> CalculateSubtotalAsync(long userId)
     {
-        var entity = await _repository.GetByIdAsync(id);
-        return entity is null ? null : CartItemMapper.ToDto(entity);
+        var cartItems = await _cartRepository.GetAllAsync();
+        var userItems = cartItems.Where(x => x.UserId == userId);
+
+        return userItems.Sum(x => x.UnitPrice * x.Quantity);
     }
 
-    public async Task<IEnumerable<CartItemGetDto>> GetByCartIdAsync(long cartId)
+    public async Task ClearCartAsync(long userId)
     {
-        var items = await _repository.GetByCartIdAsync(cartId);
-        return items.Select(CartItemMapper.ToDto).ToList();
+        var cartItems = await _cartRepository.GetAllAsync();
+        var userItems = cartItems.Where(x => x.UserId == userId);
+
+        foreach (var item in userItems)
+        {
+            await _cartRepository.DeleteAsync(item.Id);
+        }
     }
 
-    public async Task UpdateAsync(long id, CartItemUpdateDto dto)
+    public async Task<ICollection<CartItemDto>> GetUserCartAsync(long userId)
     {
-        var entity = await _repository.GetByIdAsync(id);
-        if (entity is null)
-            throw new KeyNotFoundException($"Cart item with ID {id} not found.");
+        var cartItems = await _cartRepository.GetAllAsync();
+        var userItems = cartItems.Where(x => x.UserId == userId);
 
-        CartItemMapper.UpdateEntity(entity, dto);
-        await _repository.UpdateAsync(entity);
+        return userItems.Select(item => new CartItemDto
+        {
+            Id = item.Id,
+            ProductVariantId = item.ProductVariantId,
+            Quantity = item.Quantity,
+            UnitPrice = item.UnitPrice,
+            UserId = item.UserId,
+            TotalPrice = item.UnitPrice * item.Quantity
+        }).ToList();
     }
 
-    public async Task DeleteAsync(long id)
+    public async Task RemoveFromCartAsync(long userId, long cartItemId)
     {
-        await _repository.DeleteAsync(id);
+        var item = await _cartRepository.GetByIdAsync(cartItemId);
+        if (item == null || item.UserId != userId)
+            throw new Exception("Cart item not found or access denied");
+
+        await _cartRepository.DeleteAsync(cartItemId);
     }
 
-    public async Task<IEnumerable<CartItemGetDto>> GetByUserIdAsync(long userId)
+    public async Task UpdateQuantityAsync(long userId, long cartItemId, int quantity)
     {
-        throw new NotImplementedException("Cart orqali userId bog‘lanmagan bo‘lsa, bu metod keyinroq implement qilinadi.");
-    }
+        var item = await _cartRepository.GetByIdAsync(cartItemId);
+        if (item == null || item.UserId != userId)
+            throw new Exception("Cart item not found or access denied");
 
-    public async Task IncrementQuantityAsync(long id, int amount = 1)
-    {
-        await _repository.IncrementQuantityAsync(id, amount);
-    }
-
-    public async Task DecrementQuantityAsync(long id, int amount = 1)
-    {
-        await _repository.DecrementQuantityAsync(id, amount);
-    }
-
-    public async Task ClearCartAsync(long cartId)
-    {
-        await _repository.ClearCartAsync(cartId);
-    }
-
-    public async Task<decimal> GetTotalPriceAsync(long cartId)
-    {
-        return await _repository.GetTotalPriceAsync(cartId);
+        if (quantity <= 0)
+        {
+            await _cartRepository.DeleteAsync(cartItemId);
+        }
+        else
+        {
+            item.Quantity = quantity;
+            await _cartRepository.UpdateAsync(item);
+        }
     }
 }
